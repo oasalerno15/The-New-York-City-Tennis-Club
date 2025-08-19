@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Wrapper, Status } from '@googlemaps/react-wrapper';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Suspense } from 'react';
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
 
 // Interface for court data
@@ -155,7 +154,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
         map: map,
         title: court.name,
         icon: {
-          url: getSurfaceIcon(court.surface),
+          url: getSurfaceIcon(),
           scaledSize: new google.maps.Size(30, 30)
         }
       });
@@ -188,7 +187,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
     setMarkers(newMarkers);
   }, [map, filteredCourts]);
 
-  const getSurfaceIcon = (surface: string) => {
+  const getSurfaceIcon = () => {
     // All pins are green now
     const color = '#10B981'; // Green for all courts
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
@@ -249,6 +248,57 @@ const render = (status: Status) => {
     return <div className="text-red-500 p-4 text-center">Error loading Google Maps. Please check your API key.</div>;
   }
   return <div className="text-center p-4">Loading Google Maps...</div>;
+};
+
+// Q&A Item Component
+const QAItem = ({ qa }: { qa: { question: string; answer: string } }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className='relative'
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Question - Always visible */}
+      <div className='py-6 cursor-pointer transition-all duration-300'>
+        <div className='flex items-center justify-between'>
+          <h3 className={`text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
+            {qa.question}
+          </h3>
+          <motion.svg
+            className={`w-6 h-6 transition-all duration-300 ${isHovered ? 'text-green-600' : 'text-gray-400'}`}
+            animate={{ rotate: isHovered ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+          </motion.svg>
+        </div>
+      </div>
+
+      {/* Answer - Appears on hover */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className='overflow-hidden'
+          >
+            <div className='pb-4'>
+              <p className='text-gray-700 leading-relaxed text-lg'>
+                {qa.answer}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 };
 
 interface MediaAbout {
@@ -315,7 +365,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const [selectedBoroughs, setSelectedBoroughs] = useState<string[]>([]);
   const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>([]);
   const [selectedPermitStatuses, setSelectedPermitStatuses] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [courts, setCourts] = useState<CourtData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -512,22 +561,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           Court Finder
         </motion.h2>
         
-        {/* Centered and smaller search bar */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className='flex justify-center mb-8'
-        >
-          <input 
-            type="text" 
-            placeholder="Search by court name" 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className='w-96 p-4 text-lg border border-gray-300 rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300'
-          />
-        </motion.div>
-
         {/* Centered checkbox sections */}
         <div className='flex justify-center'>
           <motion.div 
@@ -817,60 +850,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 question: "What should I know about court rules?",
                 answer: "Rules vary significantly: some courts have time limits, reservation systems, or attendants; others are purely first-come, first-serve. Surfaces and conditions also differ by location and borough."
               }
-            ].map((qa, index) => {
-              const [isHovered, setIsHovered] = useState(false);
-
-  return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-                  className='relative'
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                >
-                  {/* Question - Always visible */}
-                  <div className='py-6 cursor-pointer transition-all duration-300'>
-                    <div className='flex items-center justify-between'>
-                      <h3 className={`text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
-                        {qa.question}
-                      </h3>
-                      <motion.svg
-                        className={`w-6 h-6 transition-all duration-300 ${isHovered ? 'text-green-600' : 'text-gray-400'}`}
-                        animate={{ rotate: isHovered ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
-                      </motion.svg>
-                    </div>
-                  </div>
-
-                  {/* Answer - Appears on hover */}
-                  <AnimatePresence>
-                    {isHovered && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className='overflow-hidden'
-                      >
-                        <div className='pb-4'>
-                          <p className='text-gray-700 leading-relaxed text-lg'>
-                            {qa.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
+            ].map((qa, index) => (
+              <QAItem key={index} qa={qa} />
+            ))}
           </div>
 
           <motion.p 
@@ -1128,7 +1110,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 };
 
 const Demo = () => {
-  const [mediaType, setMediaType] = useState('video');
+  const [mediaType] = useState('video');
   const currentMedia = sampleMediaContent[mediaType];
   const [showNav, setShowNav] = useState(true);
 
