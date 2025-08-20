@@ -22,6 +22,7 @@ interface ScrollExpandMediaProps {
   scrollToExpand?: string;
   textBlend?: boolean;
   children?: ReactNode;
+  disableScrollBlocking?: boolean;
 }
 
 const ScrollExpandMedia = ({
@@ -34,6 +35,7 @@ const ScrollExpandMedia = ({
   scrollToExpand,
   textBlend,
   children,
+  disableScrollBlocking = false,
 }: ScrollExpandMediaProps) => {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [showContent, setShowContent] = useState<boolean>(false);
@@ -112,44 +114,48 @@ const ScrollExpandMedia = ({
     };
 
     const handleScroll = (): void => {
-      if (!mediaFullyExpanded) {
+      if (!disableScrollBlocking && !mediaFullyExpanded) {
         window.scrollTo(0, 0);
       }
     };
 
-    window.addEventListener('wheel', handleWheel as unknown as EventListener, {
-      passive: false,
-    });
-    window.addEventListener('scroll', handleScroll as EventListener);
-    window.addEventListener(
-      'touchstart',
-      handleTouchStart as unknown as EventListener,
-      { passive: false }
-    );
-    window.addEventListener(
-      'touchmove',
-      handleTouchMove as unknown as EventListener,
-      { passive: false }
-    );
-    window.addEventListener('touchend', handleTouchEnd as EventListener);
+    if (!disableScrollBlocking) {
+      window.addEventListener('wheel', handleWheel as unknown as EventListener, {
+        passive: false,
+      });
+      window.addEventListener('scroll', handleScroll as EventListener);
+      window.addEventListener(
+        'touchstart',
+        handleTouchStart as unknown as EventListener,
+        { passive: false }
+      );
+      window.addEventListener(
+        'touchmove',
+        handleTouchMove as unknown as EventListener,
+        { passive: false }
+      );
+      window.addEventListener('touchend', handleTouchEnd as EventListener);
+    }
 
     return () => {
-      window.removeEventListener(
-        'wheel',
-        handleWheel as unknown as EventListener
-      );
-      window.removeEventListener('scroll', handleScroll as EventListener);
-      window.removeEventListener(
-        'touchstart',
-        handleTouchStart as unknown as EventListener
-      );
-      window.removeEventListener(
-        'touchmove',
-        handleTouchMove as unknown as EventListener
-      );
-      window.removeEventListener('touchend', handleTouchEnd as EventListener);
+      if (!disableScrollBlocking) {
+        window.removeEventListener(
+          'wheel',
+          handleWheel as unknown as EventListener
+        );
+        window.removeEventListener('scroll', handleScroll as EventListener);
+        window.removeEventListener(
+          'touchstart',
+          handleTouchStart as unknown as EventListener
+        );
+        window.removeEventListener(
+          'touchmove',
+          handleTouchMove as unknown as EventListener
+        );
+        window.removeEventListener('touchend', handleTouchEnd as EventListener);
+      }
     };
-  }, [scrollProgress, mediaFullyExpanded, touchStartY]);
+  }, [scrollProgress, mediaFullyExpanded, touchStartY, disableScrollBlocking]);
 
   useEffect(() => {
     const checkIfMobile = (): void => {
@@ -317,14 +323,6 @@ const ScrollExpandMedia = ({
                       style={{ transform: `translateX(-${textTranslateX}vw)` }}
                     >
                       {date}
-                    </p>
-                  )}
-                  {scrollToExpand && (
-                    <p
-                      className='text-blue-200 font-medium text-center'
-                      style={{ transform: `translateX(${textTranslateX}vw)` }}
-                    >
-                      {scrollToExpand}
                     </p>
                   )}
                 </div>

@@ -332,7 +332,7 @@ const sampleMediaContent: MediaContentCollection = {
     poster: '/sunset.jpg', // Using sunset as poster image
     background: '/sunset.jpg', // Using your sunset image as background
     title: 'The New York City Tennis Club',
-    date: 'Aerial View',
+    date: 'Scroll down',
     scrollToExpand: 'Scroll Down',
     about: {
       overview:
@@ -541,7 +541,310 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .checkbox-wrapper input[type="checkbox"]:checked + label svg rect {
           stroke: #10B981;
-          fill: #f0fdf4;
+          fill: #10B981;
+        }
+
+        /* Big Green Animated Hover Cards */
+        .cards {
+          display: flex;
+          flex-direction: column;
+          gap: 25px;
+        }
+
+        .cards .red {
+          background-color: white;
+          box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
+          border: 2px solid rgba(21, 128, 61, 0.3);
+        }
+
+        .cards .blue {
+          background-color: white;
+          box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
+          border: 2px solid rgba(21, 128, 61, 0.3);
+        }
+
+        .cards .green {
+          background-color: white;
+          box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
+          border: 2px solid rgba(21, 128, 61, 0.3);
+        }
+
+        .cards .card {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          text-align: center;
+          height: 180px;
+          width: 400px;
+          border-radius: 15px;
+          color: #374151;
+          cursor: pointer;
+          transition: 400ms;
+          padding: 25px;
+          position: relative;
+        }
+
+        .cards .card p.tip {
+          font-size: 1.4em;
+          font-weight: 700;
+          color: #111827;
+          margin-bottom: 15px;
+          background: none;
+          border: none;
+          box-shadow: none;
+          padding: 0;
+        }
+
+        .cards .card p.second-text {
+          font-size: 1.1em;
+          color: #6b7280;
+          background: none;
+          border: none;
+          box-shadow: none;
+          padding: 0;
+        }
+
+        .cards .card .comment-box {
+          position: absolute;
+          bottom: -60px;
+          left: -20px;
+          background: white;
+          border: 2px solid rgba(21, 128, 61, 0.5);
+          border-radius: 8px;
+          padding: 12px 16px;
+          box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+          font-size: 0.9em;
+          color: #374151;
+          z-index: 10;
+        }
+
+        .cards .card:hover {
+          /* Keep shadow effect but no scale transform to prevent text movement */
+          box-shadow: 0 10px 30px rgba(21, 128, 61, 0.5);
+        }
+
+        .cards .card:hover .comment-box {
+          opacity: 1;
+          visibility: visible;
+          bottom: -50px;
+        }
+
+        .cards:hover > .card:not(:hover) {
+          filter: blur(8px);
+          /* Keep blur effect but no scale transform to prevent text movement */
+        }
+
+        /* Animated Hover Bars - From Uiverse.io by joe-watson-sbf */
+        .card {
+          width: 800px;
+          height: 600px;
+          border-radius: 12px;
+          background: #15803d;
+          display: flex;
+          gap: 10px;
+          padding: 1em;
+        }
+
+        .card p {
+          height: 100%;
+          flex: 1;
+          overflow: hidden;
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all .5s;
+          background: white;
+          border: 2px solid #15803d;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .card > div:hover {
+          flex: 6;
+        }
+
+        .card > div span {
+          min-width: 35em;
+          padding: 1.2em;
+          text-align: center;
+          transform: rotate(-90deg);
+          transition: all .5s;
+          text-transform: uppercase;
+          color: #15803d;
+          letter-spacing: .1em;
+          font-size: 1.4em;
+        }
+
+        .card > div:hover span {
+          transform: rotate(0);
+        }
+
+        /* Comment Input Boxes for Interactive Court Info */
+        .comment-inputs {
+          margin-top: 20px;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .card:hover + .comment-inputs {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        .comment-input {
+          margin-bottom: 15px;
+          opacity: 0;
+          transform: translateY(10px);
+          transition: all 0.3s ease;
+        }
+
+        .card:hover + .comment-inputs .comment-input {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .comment-input input {
+          width: 100%;
+          padding: 12px 16px;
+          border: 2px solid rgba(21, 128, 61, 0.3);
+          border-radius: 8px;
+          background: white;
+          color: #374151;
+          font-size: 0.9em;
+          transition: all 0.3s ease;
+        }
+
+        .comment-input input:focus {
+          outline: none;
+          border-color: rgba(21, 128, 61, 0.6);
+          box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+        }
+
+        .comment-input input::placeholder {
+          color: #9ca3af;
+        }
+
+        /* Comment Input Boxes Within Each Hover Bar */
+        .card > div {
+          height: 100%;
+          flex: 1;
+          overflow: hidden;
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all .5s;
+          background: white;
+          border: 2px solid #15803d;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+
+        .card > div .comment-input-inline {
+          position: absolute;
+          bottom: 40px;
+          left: 15px;
+          right: 15px;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          transform: translateY(10px);
+        }
+
+        .card > div:hover .comment-input-inline {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .comment-input-inline input {
+          width: 100%;
+          padding: 16px 20px;
+          border: 2px solid rgba(21, 128, 61, 0.4);
+          border-radius: 10px;
+          background: white;
+          color: #374151;
+          font-size: 1.1em;
+          transition: all 0.3s ease;
+        }
+
+        .comment-input-inline input:focus {
+          outline: none;
+          border-color: rgba(21, 128, 61, 0.7);
+          box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+        }
+
+        .comment-input-inline input::placeholder {
+          color: #9ca3af;
+          font-size: 0.75em;
+        }
+
+        /* Wait Time Controls */
+        .wait-time-controls {
+          position: absolute;
+          bottom: 120px;
+          left: 15px;
+          right: 15px;
+          display: flex;
+          gap: 12px;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          transform: translateY(10px);
+        }
+
+        .card > div:hover .wait-time-controls {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .wait-time-selector {
+          flex: 1;
+        }
+
+        .wait-time-selector select {
+          width: 100%;
+          padding: 10px 12px;
+          border: 2px solid rgba(21, 128, 61, 0.4);
+          border-radius: 8px;
+          background: white;
+          color: #374151;
+          font-size: 0.9em;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+
+        .wait-time-selector select:focus {
+          outline: none;
+          border-color: rgba(21, 128, 61, 0.7);
+          box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+        }
+
+        .report-btn {
+          padding: 10px 20px;
+          background: rgba(21, 128, 61, 0.9);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.9em;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+        }
+
+        .report-btn:hover {
+          background: rgba(21, 128, 61, 1);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
         }
       `}</style>
       
@@ -552,6 +855,154 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         transition={{ duration: 0.8, delay: 0.3 }}
         className='max-w-7xl mx-auto'
       >
+        {/* Real-Time Wait Times Section */}
+        <motion.section 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className='mb-20'
+        >
+          <motion.h2 
+            className='text-4xl md:text-5xl font-bold text-center mb-16 text-gray-800 dark:text-white'
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Real-Time Wait Times
+          </motion.h2>
+
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-20'>
+            {/* Animated Hover Bars - Left Side */}
+            <motion.div 
+              className='space-y-6'
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <h3 className='text-2xl font-semibold mb-6 text-gray-800 dark:text-white'>
+                Interactive Court Info
+              </h3>
+
+              {/* Animated Hover Bars */}
+              <div className="card">
+                                <div>
+                  <span>Hudson River Park Courts</span>
+                  <div className="wait-time-controls">
+                    <div className="wait-time-selector">
+                      <select>
+                        <option value="">Select wait time...</option>
+                        <option value="less-than-1">Less than 1 hour</option>
+                        <option value="1-2">1-2 hours</option>
+                        <option value="2-3">2-3 hours</option>
+                        <option value="more-than-3">More than 3 hours</option>
+                      </select>
+                    </div>
+                    <button className="report-btn">Report</button>
+                  </div>
+                  <div className="comment-input-inline">
+                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                  </div>
+                </div>
+                <div>
+                  <span>Pier 42</span>
+                  <div className="wait-time-controls">
+                    <div className="wait-time-selector">
+                      <select>
+                        <option value="">Select wait time...</option>
+                        <option value="less-than-1">Less than 1 hour</option>
+                        <option value="1-2">1-2 hours</option>
+                        <option value="2-3">2-3 hours</option>
+                        <option value="more-than-3">More than 3 hours</option>
+                      </select>
+                    </div>
+                    <button className="report-btn">Report</button>
+                  </div>
+                  <div className="comment-input-inline">
+                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                  </div>
+                </div>
+                <div>
+                  <span>Brian Watkins Courts</span>
+                  <div className="wait-time-controls">
+                    <div className="wait-time-selector">
+                      <select>
+                        <option value="">Select wait time...</option>
+                        <option value="less-than-1">Less than 1 hour</option>
+                        <option value="1-2">1-2 hours</option>
+                        <option value="2-3">2-3 hours</option>
+                        <option value="more-than-3">More than 3 hours</option>
+                      </select>
+                    </div>
+                    <button className="report-btn">Report</button>
+                  </div>
+                  <div className="comment-input-inline">
+                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                  </div>
+                </div>
+                <div>
+                  <span>South Oxford Courts</span>
+                  <div className="wait-time-controls">
+                    <div className="wait-time-selector">
+                      <select>
+                        <option value="">Select wait time...</option>
+                        <option value="less-than-1">Less than 1 hour</option>
+                        <option value="1-2">1-2 hours</option>
+                        <option value="2-3">2-3 hours</option>
+                        <option value="more-than-3">More than 3 hours</option>
+                      </select>
+                    </div>
+                    <button className="report-btn">Report</button>
+                  </div>
+                  <div className="comment-input-inline">
+                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                  </div>
+                </div>
+              </div>
+              
+
+            </motion.div>
+
+            {/* Big Green Display Cards - Right Side */}
+            <motion.div 
+              className='space-y-6'
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <h3 className='text-2xl font-semibold mb-6 text-gray-800 dark:text-white' style={{ transform: 'translateX(300px)' }}>
+                Live Updates
+              </h3>
+
+              {/* Big Green Display Cards */}
+              <div className="cards" style={{ transform: 'translateX(300px)' }}>
+                {/* Hudson River Park Courts - Green */}
+                <div className="card green">
+                  <p className="tip">Hudson River Park Courts</p>
+                  <p className="second-text">Less than 1 hour • Updated 12 min ago</p>
+                </div>
+                
+                {/* Pier 42 - Blue */}
+                <div className="card blue">
+                  <p className="tip">Pier 42</p>
+                  <p className="second-text">1-2 hours • Updated 45 min ago</p>
+                </div>
+                
+                {/* Brian Watkins Courts - Red */}
+                <div className="card red">
+                  <p className="tip">Brian Watkins Courts</p>
+                  <p className="second-text">More than 2 hours • Updated 1 hour ago</p>
+                </div>
+                
+                {/* South Oxford Courts - Green */}
+                <div className="card green">
+                  <p className="tip">South Oxford Courts</p>
+                  <p className="second-text">Less than 1 hour • Updated 8 min ago</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.section>
+
         <motion.h2 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -608,12 +1059,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <label htmlFor={`borough-${borough}`} className="label">
                         <svg width={45} height={45} viewBox="0 0 95 95">
                           <rect x={30} y={20} width={50} height={50} className="checkbox-rect" />
-                          <g transform="translate(0,-952.36222)">
-                            <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" className="path1" />
-                          </g>
                         </svg>
                       </label>
-                    </div>
+    </div>
                     <span className='text-lg text-black dark:text-white'>{borough}</span>
                   </motion.div>
                 ))}
@@ -656,9 +1104,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <label htmlFor={`surface-${surface}`} className="label">
                         <svg width={45} height={45} viewBox="0 0 95 95">
                           <rect x={30} y={20} width={50} height={50} className="checkbox-rect" />
-                          <g transform="translate(0,-952.36222)">
-                            <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" className="path1" />
-                          </g>
                         </svg>
                       </label>
                     </div>
@@ -709,9 +1154,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <label htmlFor={`permit-${permitStatus.value}`} className="label">
                         <svg width={45} height={45} viewBox="0 0 95 95">
                           <rect x={30} y={20} width={50} height={50} className="checkbox-rect" />
-                          <g transform="translate(0,-952.36222)">
-                            <path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" className="path1" />
-                          </g>
                         </svg>
                       </label>
                     </div>
@@ -801,7 +1243,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           <div className='flex items-center gap-2'>
             <div className='w-4 h-4 bg-emerald-500 rounded-full'></div>
             <span className='text-black dark:text-white'>All Tennis Courts</span>
-          </div>
+    </div>
         </motion.div>
       </motion.div>
 
@@ -826,18 +1268,18 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           
           <div className='space-y-8'>
             {[
-              {
-                question: "What is the official tennis season?",
-                answer: "The official tennis season runs from early April through the Sunday before Thanksgiving. Most outdoor public courts require a valid NYC Parks tennis permit during this time."
-              },
-              {
-                question: "What types of permits are available?",
-                answer: "There are two main types: Full-Season Permit (best for frequent players, valid the entire season) and Single-Play Permit (one-day use for occasional play)."
-              },
-              {
-                question: "Where can I get a tennis permit?",
-                answer: "You can get permits at NYC Parks Tennis Permit Offices (located in all five boroughs) or Paragon Sports (867 Broadway & 18th St, Manhattan). These offices handle new permits, renewals, and single-play passes."
-              },
+                              {
+                  question: "What is the official tennis season?",
+                  answer: "The official NYC tennis season runs from the first Saturday of April through the Sunday before Thanksgiving. Most outdoor public courts require a valid NYC Parks tennis permit during this time."
+                },
+                {
+                  question: "What types of permits are available?",
+                  answer: "There are several types: Full-Season Permit (best for frequent players, valid the entire season), Single-Play Permit (one-day use for occasional play - $15), Senior Permit (discounted rate for seniors 65+), and Student Permit (discounted rate for students with valid ID)."
+                },
+                {
+                  question: "Where can I get a tennis permit?",
+                  answer: "You can get permits at NYC Parks Tennis Permit Offices in all five boroughs: Bronx (1 Bronx River Parkway, Bronx, NY 10462), Brooklyn (95 Prospect Park West, between 4th & 5th Streets, Brooklyn, NY 11215), Manhattan (830 5th Avenue, The Arsenal, Room 1 Basement, New York, NY 10065), Queens (Passerelle Building, across from outdoor tennis courts, Flushing Meadows–Corona Park, Queens, NY 11368), or Paragon Sports (867 Broadway & 18th Street, New York, NY 10003). All offices are open Monday–Friday, 9 AM–4 PM, except Paragon which is open Monday–Sunday, 11:00 a.m.–7:00 p.m. (note: Paragon will not issue/renew permits past 30 minutes before closing)."
+                },
               {
                 question: "How strictly are permits enforced?",
                 answer: "Enforcement varies widely between courts. Some locations check permits every time, others rarely check, and some courts are permit-free. There are also opportunities to play without a permit during the official season."
@@ -1072,7 +1514,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
               className='lg:w-3/5 flex justify-center'
-            >
+      >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
@@ -1161,37 +1603,11 @@ const Demo = () => {
             
         <div className='container mx-auto px-4 py-14 md:py-18'>
           <div className='flex items-center justify-center'>
-                {/* Navigation Links - Centered */}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className='flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-8'
-                >
-                  {[
-                    { href: "#tennis-101", text: "NYC TENNIS 101" },
-                    { href: "#find-court", text: "FIND A COURT", underline: true },
-                    { href: "#wait-times", text: "WAIT TIMES" }
-                  ].map((link, index) => (
-                    <motion.a
-                      key={link.href}
-                      href={link.href}
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ 
-                        duration: 0.5, 
-                        delay: 0.6 + (index * 0.1),
-                        ease: "easeOut"
-                      }}
-                      className="btn"
-                    >
-                      {link.text}
-                    </motion.a>
-                  ))}
-                </motion.div>
-              </div>
+              {/* Navigation Links - Centered */}
+              {/* Navigation buttons removed as requested */}
             </div>
-          </motion.nav>
+          </div>
+        </motion.nav>
         )}
       </AnimatePresence>
 
