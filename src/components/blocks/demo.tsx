@@ -189,7 +189,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
 
   const getSurfaceIcon = () => {
     // All pins are green now
-    const color = '#10B981'; // Green for all courts
+    const color = '#1B3A2E'; // Green for all courts
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
         <circle cx="15" cy="15" r="12" fill="${color}" stroke="white" stroke-width="2"/>
@@ -239,7 +239,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
     }
   };
 
-  return <div ref={mapRef} style={{ width: '100%', height: '600px', borderRadius: '8px' }} />;
+  return <div ref={mapRef} style={{ width: '100%', height: '400px', borderRadius: '8px' }} className="md:h-[600px]" />;
 };
 
 // Render component for Google Maps
@@ -261,9 +261,9 @@ const QAItem = ({ qa }: { qa: { question: string; answer: string } }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Question - Always visible */}
-      <div className='py-6 cursor-pointer transition-all duration-300'>
+      <div className='py-4 md:py-6 cursor-pointer transition-all duration-300'>
         <div className='flex items-center justify-between'>
-          <h3 className={`text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
+          <h3 className={`text-xl md:text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
             {qa.question}
           </h3>
           <motion.svg
@@ -290,7 +290,7 @@ const QAItem = ({ qa }: { qa: { question: string; answer: string } }) => {
             className='overflow-hidden'
           >
             <div className='pb-4'>
-              <p className='text-gray-700 leading-relaxed text-lg'>
+              <p className='text-gray-700 leading-relaxed text-base md:text-lg'>
                 {qa.answer}
               </p>
             </div>
@@ -380,18 +380,35 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     if (!isMounted || !videoRef.current) return;
 
     const video = videoRef.current;
+    
+    // Force video to load and play on mobile
+    const playVideo = async () => {
+      try {
+        video.load();
+        await video.play();
+        setHasPlayed(true);
+      } catch (error) {
+        console.log('Autoplay failed, user interaction required');
+        // On mobile, we might need user interaction
+        const playOnInteraction = () => {
+          video.play().catch(() => {});
+          document.removeEventListener('touchstart', playOnInteraction);
+          document.removeEventListener('click', playOnInteraction);
+        };
+        document.addEventListener('touchstart', playOnInteraction);
+        document.addEventListener('click', playOnInteraction);
+      }
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed) {
-            video.play().catch(() => {
-              // Autoplay failed, that's ok
-            });
-            setHasPlayed(true);
+            playVideo();
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.3 }
     );
 
     observer.observe(video);
@@ -522,7 +539,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           stroke-dashoffset: 400;
           transition: .5s stroke-dashoffset;
           opacity: 0;
-          stroke: #10B981;
+          stroke: #1B3A2E;
           stroke-width: 3;
           fill: none;
         }
@@ -540,8 +557,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .checkbox-wrapper input[type="checkbox"]:checked + label svg rect {
-          stroke: #10B981;
-          fill: #10B981;
+          stroke: #1B3A2E;
+          fill: #1B3A2E;
         }
 
         /* Big Green Animated Hover Cards */
@@ -553,43 +570,45 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .cards .red {
           background-color: white;
-          box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
-          border: 2px solid rgba(21, 128, 61, 0.3);
+          box-shadow: 0 6px 20px rgba(27, 58, 46, 0.4);
+          border: 2px solid rgba(27, 58, 46, 0.3);
         }
 
         .cards .blue {
           background-color: white;
-          box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
-          border: 2px solid rgba(21, 128, 61, 0.3);
+          box-shadow: 0 6px 20px rgba(27, 58, 46, 0.4);
+          border: 2px solid rgba(27, 58, 46, 0.3);
         }
 
         .cards .green {
           background-color: white;
-          box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
-          border: 2px solid rgba(21, 128, 61, 0.3);
+          box-shadow: 0 6px 20px rgba(27, 58, 46, 0.4);
+          border: 2px solid rgba(27, 58, 46, 0.3);
         }
 
         .cards .card {
           display: flex;
           align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          text-align: center;
-          height: 180px;
-          width: 400px;
+          justify-content: flex-start;
+          flex-direction: row;
+          text-align: left;
+          height: 90px;
+          width: 100%;
+          max-width: 250px;
           border-radius: 15px;
           color: #374151;
           cursor: pointer;
           transition: 400ms;
-          padding: 25px;
+          padding: 15px;
           position: relative;
+          margin: 0 auto;
         }
 
         .cards .card p.tip {
-          font-size: 1.4em;
+          font-size: 1em;
           font-weight: 700;
           color: #111827;
-          margin-bottom: 15px;
+          margin-bottom: 4px;
           background: none;
           border: none;
           box-shadow: none;
@@ -597,7 +616,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .cards .card p.second-text {
-          font-size: 1.1em;
+          font-size: 0.8em;
           color: #6b7280;
           background: none;
           border: none;
@@ -605,15 +624,33 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           padding: 0;
         }
 
+        /* Mobile responsive adjustments for cards */
+        @media (max-width: 768px) {
+          .cards .card {
+            height: 80px;
+            max-width: 100%;
+            padding: 12px;
+          }
+          
+          .cards .card p.tip {
+            font-size: 0.9em;
+            margin-bottom: 6px;
+          }
+          
+          .cards .card p.second-text {
+            font-size: 0.75em;
+          }
+        }
+
         .cards .card .comment-box {
           position: absolute;
           bottom: -60px;
           left: -20px;
           background: white;
-          border: 2px solid rgba(21, 128, 61, 0.5);
+          border: 2px solid rgba(27, 58, 46, 0.5);
           border-radius: 8px;
           padding: 12px 16px;
-          box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+          box-shadow: 0 4px 12px rgba(27, 58, 46, 0.3);
           opacity: 0;
           visibility: hidden;
           transition: all 0.3s ease;
@@ -625,7 +662,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .cards .card:hover {
           /* Keep shadow effect but no scale transform to prevent text movement */
-          box-shadow: 0 10px 30px rgba(21, 128, 61, 0.5);
+          box-shadow: 0 10px 30px rgba(27, 58, 46, 0.5);
         }
 
         .cards .card:hover .comment-box {
@@ -641,13 +678,15 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         /* Animated Hover Bars - From Uiverse.io by joe-watson-sbf */
         .card {
-          width: 800px;
-          height: 600px;
+          width: 100%;
+          max-width: 320px;
+          height: 200px;
           border-radius: 12px;
-          background: #15803d;
+          background: #1B3A2E;
           display: flex;
-          gap: 10px;
-          padding: 1em;
+          gap: 8px;
+          padding: 0.8em;
+          margin: 0 auto;
         }
 
         .card p {
@@ -658,30 +697,52 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           border-radius: 6px;
           transition: all .5s;
           background: white;
-          border: 2px solid #15803d;
+          border: 2px solid #1B3A2E;
           display: flex;
           justify-content: center;
           align-items: center;
         }
 
         .card > div:hover {
-          flex: 6;
+          flex: 4;
         }
 
         .card > div span {
-          min-width: 35em;
-          padding: 1.2em;
+          min-width: 15em;
+          padding: 1em;
           text-align: center;
           transform: rotate(-90deg);
           transition: all .5s;
           text-transform: uppercase;
-          color: #15803d;
+          color: #1B3A2E;
           letter-spacing: .1em;
-          font-size: 1.4em;
+          font-size: 0.9em;
         }
 
         .card > div:hover span {
           transform: rotate(0);
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+          .card {
+            width: 100%;
+            max-width: 100%;
+            height: 150px;
+            flex-direction: column;
+            gap: 6px;
+            padding: 0.6em;
+          }
+          
+          .card > div span {
+            min-width: auto;
+            font-size: 0.8em;
+            padding: 0.6em;
+          }
+          
+          .card > div:hover {
+            flex: 1;
+          }
         }
 
         /* Comment Input Boxes for Interactive Court Info */
@@ -712,7 +773,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .comment-input input {
           width: 100%;
           padding: 12px 16px;
-          border: 2px solid rgba(21, 128, 61, 0.3);
+          border: 2px solid rgba(27, 58, 46, 0.3);
           border-radius: 8px;
           background: white;
           color: #374151;
@@ -722,8 +783,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .comment-input input:focus {
           outline: none;
-          border-color: rgba(21, 128, 61, 0.6);
-          box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+          border-color: rgba(27, 58, 46, 0.6);
+          box-shadow: 0 0 0 3px rgba(27, 58, 46, 0.1);
         }
 
         .comment-input input::placeholder {
@@ -767,7 +828,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .comment-input-inline input {
           width: 100%;
           padding: 16px 20px;
-          border: 2px solid rgba(21, 128, 61, 0.4);
+          border: 2px solid rgba(27, 58, 46, 0.4);
           border-radius: 10px;
           background: white;
           color: #374151;
@@ -777,8 +838,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .comment-input-inline input:focus {
           outline: none;
-          border-color: rgba(21, 128, 61, 0.7);
-          box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+          border-color: rgba(27, 58, 46, 0.7);
+          box-shadow: 0 0 0 2px rgba(27, 58, 46, 0.1);
         }
 
         .comment-input-inline input::placeholder {
@@ -813,7 +874,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .wait-time-selector select {
           width: 100%;
           padding: 10px 12px;
-          border: 2px solid rgba(21, 128, 61, 0.4);
+          border: 2px solid rgba(27, 58, 46, 0.4);
           border-radius: 8px;
           background: white;
           color: #374151;
@@ -824,13 +885,13 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .wait-time-selector select:focus {
           outline: none;
-          border-color: rgba(21, 128, 61, 0.7);
-          box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+          border-color: rgba(27, 58, 46, 0.7);
+          box-shadow: 0 0 0 2px rgba(27, 58, 46, 0.1);
         }
 
         .report-btn {
           padding: 10px 20px;
-          background: rgba(21, 128, 61, 0.9);
+          background: rgba(27, 58, 46, 0.9);
           color: white;
           border: none;
           border-radius: 8px;
@@ -842,9 +903,60 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .report-btn:hover {
-          background: rgba(21, 128, 61, 1);
+          background: rgba(27, 58, 46, 1);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+          box-shadow: 0 4px 12px rgba(27, 58, 46, 0.3);
+        }
+        
+        /* Additional mobile optimizations */
+        @media (max-width: 768px) {
+          /* Ensure proper mobile spacing */
+          .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+          }
+          
+          /* Better mobile card spacing */
+          .cards {
+            gap: 15px;
+          }
+          
+          /* Mobile-friendly input sizing */
+          .comment-input-inline input,
+          .wait-time-selector select {
+            font-size: 0.85em;
+            padding: 12px 16px;
+          }
+          
+          /* Mobile button sizing */
+          .report-btn {
+            padding: 8px 16px;
+            font-size: 0.85em;
+          }
+          
+          /* Ensure no horizontal overflow */
+          .card > div span {
+            word-break: break-word;
+            max-width: 100%;
+          }
+        }
+        
+        /* Extra small mobile devices */
+        @media (max-width: 480px) {
+          .card {
+            height: 120px;
+            padding: 0.5em;
+          }
+          
+          .cards .card {
+            height: 70px;
+            padding: 10px;
+          }
+          
+          .card > div span {
+            font-size: 0.75em;
+            padding: 0.5em;
+          }
         }
       `}</style>
       
@@ -853,17 +965,17 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className='max-w-7xl mx-auto'
+        className='max-w-7xl mx-auto px-3 md:px-4'
       >
         {/* Real-Time Wait Times Section */}
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className='mb-20'
+          className='mb-12 md:mb-20'
         >
           <motion.h2 
-            className='text-4xl md:text-5xl font-bold text-center mb-16 text-gray-800 dark:text-white'
+            className='text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-16 text-gray-800 dark:text-white'
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -871,15 +983,15 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             Real-Time Wait Times
           </motion.h2>
 
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-20'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16'>
             {/* Animated Hover Bars - Left Side */}
             <motion.div 
-              className='space-y-6'
+              className='space-y-3 md:space-y-4'
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <h3 className='text-2xl font-semibold mb-6 text-gray-800 dark:text-white'>
+              <h3 className='text-lg md:text-xl lg:text-2xl font-semibold mb-3 md:mb-4 text-gray-800 dark:text-white'>
                 Interactive Court Info
               </h3>
 
@@ -964,39 +1076,59 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
             {/* Big Green Display Cards - Right Side */}
             <motion.div 
-              className='space-y-6'
+              className='space-y-3 md:space-y-4'
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <h3 className='text-2xl font-semibold mb-6 text-gray-800 dark:text-white' style={{ transform: 'translateX(300px)' }}>
+              <h3 className='text-lg md:text-xl lg:text-2xl font-semibold mb-3 md:mb-4 text-gray-800 dark:text-white'>
                 Live Updates
               </h3>
 
               {/* Big Green Display Cards */}
-              <div className="cards" style={{ transform: 'translateX(300px)' }}>
+              <div className="cards">
                 {/* Hudson River Park Courts - Green */}
                 <div className="card green">
-                  <p className="tip">Hudson River Park Courts</p>
-                  <p className="second-text">Less than 1 hour • Updated 12 min ago</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <p className="tip">Hudson River Park Courts</p>
+                      <p className="second-text">Less than 1 hour • Updated 12 min ago</p>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Pier 42 - Blue */}
                 <div className="card blue">
-                  <p className="tip">Pier 42</p>
-                  <p className="second-text">1-2 hours • Updated 45 min ago</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <p className="tip">Pier 42</p>
+                      <p className="second-text">1-2 hours • Updated 45 min ago</p>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Brian Watkins Courts - Red */}
                 <div className="card red">
-                  <p className="tip">Brian Watkins Courts</p>
-                  <p className="second-text">More than 2 hours • Updated 1 hour ago</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <p className="tip">Brian Watkins Courts</p>
+                      <p className="second-text">More than 2 hours • Updated 1 hour ago</p>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* South Oxford Courts - Green */}
                 <div className="card green">
-                  <p className="tip">South Oxford Courts</p>
-                  <p className="second-text">Less than 1 hour • Updated 8 min ago</p>
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <p className="tip">South Oxford Courts</p>
+                      <p className="second-text">Less than 1 hour • Updated 8 min ago</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1007,7 +1139,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className='text-5xl font-bold mb-12 text-black dark:text-white text-center'
+          className='text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-black dark:text-white text-center'
         >
           Court Finder
         </motion.h2>
@@ -1018,7 +1150,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.9 }}
-            className='grid grid-cols-1 md:grid-cols-3 gap-16 mb-12'
+            className='grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 mb-6 md:mb-10'
           >
             {/* Boroughs */}
             <motion.div 
@@ -1030,10 +1162,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               }}
               className='text-center'
             >
-              <h3 className='text-2xl font-bold mb-6 text-black dark:text-white'>
+              <h3 className='text-xl md:text-2xl font-bold mb-4 md:mb-6 text-black dark:text-white'>
                 Boroughs
               </h3>
-              <div className='space-y-4 flex flex-col items-start'>
+              <div className='space-y-3 md:space-y-4 flex flex-col items-start'>
                 {['Manhattan', 'Brooklyn', 'Queens', 'The Bronx'].map((borough, index) => (
                   <motion.div
                     key={borough}
@@ -1075,10 +1207,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               transition={{ duration: 0.6, delay: 1.1 }}
               className='text-center'
             >
-              <h3 className='text-2xl font-bold mb-6 text-black dark:text-white'>
+              <h3 className='text-xl md:text-2xl font-bold mb-4 md:mb-6 text-black dark:text-white'>
                 Surfaces
               </h3>
-              <div className='space-y-4 flex flex-col items-start'>
+              <div className='space-y-3 md:space-y-4 flex flex-col items-start'>
                 {['Hard', 'Clay', 'Har-Tru'].map((surface, index) => (
                   <motion.div
                     key={surface}
@@ -1120,10 +1252,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               transition={{ duration: 0.6, delay: 1.1 }}
               className='text-center'
             >
-              <h3 className='text-2xl font-bold mb-6 text-black dark:text-white'>
+              <h3 className='text-xl md:text-2xl font-bold mb-4 md:mb-6 text-black dark:text-white'>
                 Permit Status
               </h3>
-              <div className='space-y-4 flex flex-col items-start'>
+              <div className='space-y-3 md:space-y-4 flex flex-col items-start'>
                 {[
                   { value: 'Required & Enforced', label: 'Required & Enforced' },
                   { value: 'Required, but Rarely Checked', label: 'Required, Rarely Checked' },
@@ -1179,7 +1311,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className='text-3xl font-bold mb-6 text-black dark:text-white text-center'
+          className='text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-black dark:text-white text-center'
         >
           Court Locations {courts.length > 0 && `(${courts.length} courts)`}
         </motion.h3>
@@ -1188,13 +1320,13 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className='bg-white rounded-lg p-4 shadow-lg'
+          className='bg-white rounded-lg p-2 md:p-4 shadow-lg'
         >
           {loading ? (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className='h-[600px] bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-600'
+              className='h-[400px] md:h-[600px] bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-600'
             >
               <motion.div 
                 animate={{ rotate: 360 }}
@@ -1241,9 +1373,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           className='mt-4 flex justify-center gap-6 text-sm'
         >
           <div className='flex items-center gap-2'>
-            <div className='w-4 h-4 bg-emerald-500 rounded-full'></div>
+            <div className='w-4 h-4 bg-[#1B3A2E] rounded-full'></div>
             <span className='text-black dark:text-white'>All Tennis Courts</span>
-    </div>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -1253,7 +1385,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className='mt-24 py-16'
+        className='mt-16 md:mt-24 py-12 md:py-16'
       >
         <div className='max-w-4xl mx-auto px-4'>
           <motion.h2 
@@ -1261,7 +1393,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className='text-5xl font-bold mb-16 text-black text-center'
+            className='text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-16 text-black text-center'
           >
             NYC Tennis 101
           </motion.h2>
@@ -1305,7 +1437,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             className='text-center text-gray-600 mt-16 text-lg'
           >
             For specific court details, rules, and permit enforcement, always check our{' '}
-            <span className='text-green-600 font-semibold'>Court Finder</span> above.
+            <span className='text-[#1B3A2E] font-semibold'>Court Finder</span> above.
           </motion.p>
         </div>
       </motion.div>
@@ -1316,25 +1448,25 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className='mt-24 py-20 bg-white'
+        className='mt-16 md:mt-24 py-16 md:py-20 bg-white'
       >
         <div className='max-w-7xl mx-auto px-4'>
           
-          <div className='flex flex-col lg:flex-row gap-12 items-center'>
+          <div className='flex flex-col lg:flex-row gap-8 md:gap-12 items-center'>
             {/* Left Side - Content */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className='lg:w-2/5 space-y-8'
+              className='lg:w-2/5 space-y-6 md:space-y-8'
             >
               <motion.h2
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className='text-5xl lg:text-6xl font-bold text-gray-900 leading-tight'
+                className='text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight'
               >
                 Tennis convenience starts here
               </motion.h2>
@@ -1347,7 +1479,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='text-xl text-gray-600 leading-relaxed'
               >
                 Thousands of NYC tennis players trust our platform, <br />
-                <span className='font-semibold text-green-600'>the best court finder experience.*</span>
+                <span className='font-semibold text-[#1B3A2E]'>the best court finder experience.*</span>
               </motion.p>
 
               <motion.div
@@ -1358,7 +1490,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='space-y-4'
               >
                 <div className='flex items-center space-x-3'>
-                  <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
+                  <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
                     <svg className='w-4 h-4 text-white' fill='currentColor' viewBox='0 0 20 20'>
                       <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
                     </svg>
@@ -1367,7 +1499,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     </div>
                 
                 <div className='flex items-center space-x-3'>
-                  <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
+                  <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
                     <svg className='w-4 h-4 text-white' fill='currentColor' viewBox='0 0 20 20'>
                       <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
                     </svg>
@@ -1376,7 +1508,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 </div>
                 
                 <div className='flex items-center space-x-3'>
-                  <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
+                  <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
                     <svg className='w-4 h-4 text-white' fill='currentColor' viewBox='0 0 20 20'>
                       <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
                     </svg>
@@ -1393,7 +1525,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='flex flex-col items-center space-y-4'
               >
                 {/* Simple QR Code */}
-                <div className='w-56 h-56 bg-white border-2 border-gray-200 rounded-xl p-6 shadow-lg'>
+                <div className='w-40 h-40 md:w-56 md:h-56 bg-white border-2 border-gray-200 rounded-xl p-4 md:p-6 shadow-lg'>
                   <svg viewBox="0 0 25 25" className='w-full h-full'>
                     {/* Corner squares */}
                     <rect x="0" y="0" width="7" height="7" fill="#000" rx="0.5"/>
@@ -1523,7 +1655,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='relative'
               >
                 {/* Video instead of 3D phone */}
-                <div className='w-full h-[1000px] bg-transparent'>
+                <div className='w-full h-[600px] md:h-[800px] lg:h-[1000px] bg-transparent'>
                   {!isMounted ? (
                     <div className='w-full h-full flex items-center justify-center text-gray-500'>
                       Loading video...
@@ -1531,13 +1663,15 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   ) : (
                     <video 
                       ref={videoRef}
-                      className='w-full h-full object-contain bg-transparent transform -translate-y-16 scale-105'
+                      className='w-full h-full object-contain bg-transparent transform -translate-y-8 md:-translate-y-12 lg:-translate-y-16 scale-100 md:scale-105'
                       muted
                       playsInline
+                      autoPlay
+                      loop
                       disablePictureInPicture
                       style={{ outline: 'none' }}
                     >
-                      <source src="/8_17_2025_23_17_24_contentcore.xyz.mp4" type="video/mp4" />
+                      <source src="/mixkit-two-people-playing-tennis-aerial-view-880-hd-ready.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   )}
@@ -1575,7 +1709,7 @@ const Demo = () => {
   }, []);
 
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen overflow-x-hidden'>
       {/* Navigation Bar */}
       <AnimatePresence>
         {showNav && (
