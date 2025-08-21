@@ -168,9 +168,9 @@ const ScrollExpandMedia = ({
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  const mediaWidth = 150 + scrollProgress * (isMobileState ? 250 : 500);
-  const mediaHeight = 200 + scrollProgress * (isMobileState ? 120 : 250);
-  const textTranslateX = scrollProgress * (isMobileState ? 80 : 60);
+  const mediaWidth = 250 + scrollProgress * (isMobileState ? 350 : 700);
+  const mediaHeight = 300 + scrollProgress * (isMobileState ? 180 : 350);
+  const textTranslateX = scrollProgress * (isMobileState ? 100 : 80);
 
   const firstWord = title ? title.split(' ')[0] : '';
   const restOfTitle = title ? title.split(' ').slice(1).join(' ') : '';

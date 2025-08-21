@@ -592,23 +592,23 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           justify-content: flex-start;
           flex-direction: row;
           text-align: left;
-          height: 90px;
+          height: 120px;
           width: 100%;
-          max-width: 250px;
+          max-width: 350px;
           border-radius: 15px;
           color: #374151;
           cursor: pointer;
           transition: 400ms;
-          padding: 15px;
+          padding: 20px;
           position: relative;
           margin: 0 auto;
         }
 
         .cards .card p.tip {
-          font-size: 1em;
+          font-size: 1.1em;
           font-weight: 700;
           color: #111827;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
           background: none;
           border: none;
           box-shadow: none;
@@ -616,7 +616,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .cards .card p.second-text {
-          font-size: 0.8em;
+          font-size: 0.9em;
           color: #6b7280;
           background: none;
           border: none;
@@ -627,18 +627,18 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         /* Mobile responsive adjustments for cards */
         @media (max-width: 768px) {
           .cards .card {
-            height: 80px;
+            height: 100px;
             max-width: 100%;
-            padding: 12px;
+            padding: 16px;
           }
           
           .cards .card p.tip {
-            font-size: 0.9em;
-            margin-bottom: 6px;
+            font-size: 1em;
+            margin-bottom: 5px;
           }
           
           .cards .card p.second-text {
-            font-size: 0.75em;
+            font-size: 0.8em;
           }
         }
 
@@ -679,13 +679,13 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         /* Animated Hover Bars - From Uiverse.io by joe-watson-sbf */
         .card {
           width: 100%;
-          max-width: 320px;
-          height: 200px;
+          max-width: 500px;
+          height: 280px;
           border-radius: 12px;
           background: #1B3A2E;
           display: flex;
-          gap: 8px;
-          padding: 0.8em;
+          gap: 10px;
+          padding: 1em;
           margin: 0 auto;
         }
 
@@ -704,19 +704,19 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .card > div:hover {
-          flex: 4;
+          flex: 5;
         }
 
         .card > div span {
-          min-width: 15em;
-          padding: 1em;
+          min-width: 18em;
+          padding: 1.2em;
           text-align: center;
           transform: rotate(-90deg);
           transition: all .5s;
           text-transform: uppercase;
           color: #1B3A2E;
           letter-spacing: .1em;
-          font-size: 0.9em;
+          font-size: 1em;
         }
 
         .card > div:hover span {
@@ -728,16 +728,16 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           .card {
             width: 100%;
             max-width: 100%;
-            height: 150px;
+            height: 200px;
             flex-direction: column;
-            gap: 6px;
-            padding: 0.6em;
+            gap: 8px;
+            padding: 0.8em;
           }
           
           .card > div span {
             min-width: auto;
-            font-size: 0.8em;
-            padding: 0.6em;
+            font-size: 0.9em;
+            padding: 0.8em;
           }
           
           .card > div:hover {
@@ -972,10 +972,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className='mb-12 md:mb-20'
+          className='mb-16 md:mb-24'
         >
           <motion.h2 
-            className='text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-16 text-gray-800 dark:text-white'
+            className='text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-12 md:mb-20 text-gray-800 dark:text-white'
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -986,12 +986,12 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16'>
             {/* Animated Hover Bars - Left Side */}
             <motion.div 
-              className='space-y-3 md:space-y-4'
+              className='space-y-4 md:space-y-6'
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <h3 className='text-lg md:text-xl lg:text-2xl font-semibold mb-3 md:mb-4 text-gray-800 dark:text-white'>
+              <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-white'>
                 Interactive Court Info
               </h3>
 
@@ -1076,12 +1076,12 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
             {/* Big Green Display Cards - Right Side */}
             <motion.div 
-              className='space-y-3 md:space-y-4'
+              className='space-y-4 md:space-y-6'
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <h3 className='text-lg md:text-xl lg:text-2xl font-semibold mb-3 md:mb-4 text-gray-800 dark:text-white'>
+              <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-white'>
                 Live Updates
               </h3>
 
@@ -1655,7 +1655,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='relative'
               >
                 {/* Video instead of 3D phone */}
-                <div className='w-full h-[600px] md:h-[800px] lg:h-[1000px] bg-transparent'>
+                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] bg-transparent'>
                   {!isMounted ? (
                     <div className='w-full h-full flex items-center justify-center text-gray-500'>
                       Loading video...
@@ -1663,7 +1663,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   ) : (
                     <video 
                       ref={videoRef}
-                      className='w-full h-full object-contain bg-transparent transform -translate-y-8 md:-translate-y-12 lg:-translate-y-16 scale-100 md:scale-105'
+                      className='w-full h-full object-contain bg-transparent transform -translate-y-10 md:-translate-y-14 lg:-translate-y-18 scale-100 md:scale-110'
                       muted
                       playsInline
                       autoPlay
