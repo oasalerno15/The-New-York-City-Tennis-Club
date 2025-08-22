@@ -136,3 +136,55 @@
     height: auto;
   }
 }
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+  /* Ensure proper mobile spacing */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Better mobile card spacing */
+  .cards {
+    gap: 15px;
+  }
+  
+  /* Mobile-friendly input sizing */
+  .comment-input-inline input,
+  .wait-time-selector select {
+    font-size: 0.85em;
+    padding: 12px 16px;
+  }
+  
+  /* Mobile button sizing */
+  .report-btn {
+    padding: 8px 16px;
+    font-size: 0.85em;
+  }
+  
+  /* Ensure no horizontal overflow */
+  .card > div span {
+    word-break: break-word;
+    max-width: 100%;
+  }
+  
+  /* Mobile header improvements */
+  .mobile-header {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  /* Prevent logo cutoff on mobile */
+  .mobile-logo {
+    left: 1rem !important;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  /* Better mobile video sizing */
+  .mobile-video {
+    height: 400px !important;
+    max-height: 60vh;
+  }
+}

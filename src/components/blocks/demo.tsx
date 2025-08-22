@@ -1791,7 +1791,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='relative'
               >
                 {/* Tennis Video in the center */}
-                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] relative'>
+                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] relative mobile-video'>
                   <video 
                     className='w-full h-full object-contain rounded-lg'
                     muted
@@ -1855,10 +1855,10 @@ const Demo = () => {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className='fixed top-0 left-0 right-0 z-50'
           >
-            <div className='container mx-auto px-4 py-3'>
+            <div className='container mx-auto px-4 py-2 md:py-3'>
               <div className='flex items-center justify-center'>
                 <h1 
-                  className='text-lg md:text-xl font-semibold text-white text-center drop-shadow-lg'
+                  className='text-base md:text-lg lg:text-xl font-semibold text-white text-center drop-shadow-lg leading-tight mobile-header'
                   style={{ 
                     transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
                   }}
@@ -1886,17 +1886,17 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute top-3 left-2 z-60 md:-top-24 lg:-top-20'
+              className='absolute top-3 left-4 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
             >
               <img 
                 src='/Untitled design.png' 
                 alt='NYC Tennis Club Logo' 
-                className='h-40 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
+                className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
                 style={{ background: 'transparent' }}
               />
             </motion.div>
             
-            <div className='container mx-auto px-4 py-14 md:py-18'>
+            <div className='container mx-auto px-4 py-12 md:py-14 lg:py-18'>
               <div className='flex items-center justify-center'>
                 {/* Navigation Links - Centered */}
                 {/* Navigation buttons removed as requested */}
