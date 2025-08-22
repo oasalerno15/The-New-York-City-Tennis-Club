@@ -1716,8 +1716,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 transition={{ duration: 0.6, delay: 0.6 }}
                 className='text-xl text-gray-600 leading-relaxed'
               >
-                Thousands of NYC tennis players trust our platform, <br />
-                <span className='font-semibold text-[#1B3A2E]'>the best court finder experience.*</span>
+                Mobile app coming soon
               </motion.p>
 
               <motion.div
@@ -1734,7 +1733,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                     </svg>
                   </div>
                   <span className='text-lg text-gray-700 font-medium'>Find courts instantly</span>
-    </div>
+                </div>
                 
                 <div className='flex items-center space-x-3'>
                   <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
@@ -1762,108 +1761,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 transition={{ duration: 0.6, delay: 1.0 }}
                 className='flex flex-col items-center space-y-4'
               >
-                {/* Simple QR Code */}
-                <div className='w-40 h-40 md:w-56 md:h-56 bg-white border-2 border-gray-200 rounded-xl p-4 md:p-6 shadow-lg'>
-                  <svg viewBox="0 0 25 25" className='w-full h-full'>
-                    {/* Corner squares */}
-                    <rect x="0" y="0" width="7" height="7" fill="#000" rx="0.5"/>
-                    <rect x="1" y="1" width="5" height="5" fill="#fff" rx="0.3"/>
-                    <rect x="2" y="2" width="3" height="3" fill="#000" rx="0.2"/>
-                    
-                    <rect x="18" y="0" width="7" height="7" fill="#000" rx="0.5"/>
-                    <rect x="19" y="1" width="5" height="5" fill="#fff" rx="0.3"/>
-                    <rect x="20" y="2" width="3" height="3" fill="#000" rx="0.2"/>
-                    
-                    <rect x="0" y="18" width="7" height="7" fill="#000" rx="0.5"/>
-                    <rect x="1" y="19" width="5" height="5" fill="#fff" rx="0.3"/>
-                    <rect x="2" y="20" width="3" height="3" fill="#000" rx="0.2"/>
-                    
-                    {/* Timing patterns */}
-                    <rect x="8" y="0" width="1" height="1" fill="#000"/>
-                    <rect x="10" y="0" width="1" height="1" fill="#000"/>
-                    <rect x="12" y="0" width="1" height="1" fill="#000"/>
-                    <rect x="14" y="0" width="1" height="1" fill="#000"/>
-                    <rect x="16" y="0" width="1" height="1" fill="#000"/>
-                    
-                    <rect x="0" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="2" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="4" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="6" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="10" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="12" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="14" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="16" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="18" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="20" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="22" y="8" width="1" height="1" fill="#000"/>
-                    <rect x="24" y="8" width="1" height="1" fill="#000"/>
-                    
-                    <rect x="8" y="1" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="3" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="5" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="7" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="19" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="21" width="1" height="1" fill="#000"/>
-                    <rect x="8" y="23" width="1" height="1" fill="#000"/>
-                    
-                    {/* Data modules */}
-                    <rect x="9" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="11" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="13" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="15" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="17" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="19" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="21" y="9" width="1" height="1" fill="#000"/>
-                    <rect x="23" y="9" width="1" height="1" fill="#000"/>
-                    
-                    <rect x="9" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="11" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="13" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="15" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="17" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="19" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="21" y="11" width="1" height="1" fill="#000"/>
-                    <rect x="23" y="11" width="1" height="1" fill="#000"/>
-                    
-                    <rect x="9" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="11" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="13" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="15" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="17" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="19" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="21" y="13" width="1" height="1" fill="#000"/>
-                    <rect x="23" y="13" width="1" height="1" fill="#000"/>
-                    
-                    {/* Additional data pattern */}
-                    <rect x="10" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="12" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="14" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="16" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="18" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="20" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="22" y="15" width="1" height="1" fill="#000"/>
-                    <rect x="24" y="15" width="1" height="1" fill="#000"/>
-                    
-                    <rect x="9" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="11" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="13" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="15" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="17" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="19" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="21" y="17" width="1" height="1" fill="#000"/>
-                    <rect x="23" y="17" width="1" height="1" fill="#000"/>
-                  </svg>
-                </div>
-                
-                <p className='text-xl font-bold text-gray-800'>
-                  Download The App
-                </p>
+                {/* QR Code section removed */}
               </motion.div>
 
               <motion.p
@@ -1893,48 +1791,22 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 className='relative'
               >
                 {/* Tennis Video in the center */}
-                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] bg-transparent relative'>
-                  {!isMounted ? (
-                    <div className='w-full h-full flex items-center justify-center text-gray-500 bg-gray-100 rounded-lg'>
-                      <div className='text-center'>
-                        <div className='text-6xl mb-4'>🎾</div>
-                        <p className='text-lg font-semibold'>Loading Tennis Video...</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <video 
-                      ref={videoRef}
-                      className='w-full h-full object-contain bg-gray-100 rounded-lg shadow-2xl'
-                      muted
-                      playsInline
-                      autoPlay
-                      loop
-                      disablePictureInPicture
-                      style={{ outline: 'none' }}
-                      onError={(e) => console.log('Video error:', e)}
-                      onLoadStart={() => console.log('Video loading started')}
-                      onCanPlay={() => console.log('Video can play')}
-                    >
-                      <source src="/mixkit-two-people-playing-tennis-aerial-view-880-hd-ready.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  )}
-                  
-                  {/* Video overlay with play button for mobile */}
-                  {isMounted && (
-                    <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-                      <div className='bg-black/20 rounded-full p-4 pointer-events-auto cursor-pointer' 
-                           onClick={() => {
-                             if (videoRef.current) {
-                               videoRef.current.play().catch(() => {});
-                             }
-                           }}>
-                        <div className='w-16 h-16 bg-white/90 rounded-full flex items-center justify-center'>
-                          <div className='w-0 h-0 border-l-[12px] border-l-[#1B3A2E] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1'></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] relative'>
+                  <video 
+                    className='w-full h-full object-contain rounded-lg'
+                    muted
+                    playsInline
+                    autoPlay
+                    onEnded={(e) => {
+                      // Stop the video when it ends
+                      e.currentTarget.pause();
+                      e.currentTarget.currentTime = 0;
+                    }}
+                    style={{ outline: 'none' }}
+                  >
+                    <source src="/8_22_2025_14_53_32_contentcore.xyz.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
                 </div>
               </motion.div>
             </motion.div>
@@ -1949,6 +1821,9 @@ const Demo = () => {
   const [mediaType] = useState('video');
   const currentMedia = sampleMediaContent[mediaType];
   const [showNav, setShowNav] = useState(true);
+  
+  // Header positioning controls
+  const [headerPosition, setHeaderPosition] = useState({ x: 0, y: 55 });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1961,7 +1836,7 @@ const Demo = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setShowNav(scrollY < 100); // Hide nav when scrolled down more than 100px
+      setShowNav(scrollY < 1); // Hide nav immediately when scrolling (changed from 100 to 1)
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -1982,7 +1857,12 @@ const Demo = () => {
           >
             <div className='container mx-auto px-4 py-3'>
               <div className='flex items-center justify-center'>
-                <h1 className='text-lg md:text-xl font-semibold text-white text-center drop-shadow-lg'>
+                <h1 
+                  className='text-lg md:text-xl font-semibold text-white text-center drop-shadow-lg'
+                  style={{ 
+                    transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
+                  }}
+                >
                   Check Wait Times • Find a Court
                 </h1>
               </div>
