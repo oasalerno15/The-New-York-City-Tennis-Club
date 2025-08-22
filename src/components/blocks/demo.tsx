@@ -538,7 +538,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       time: waitTime,
       status: getStatusFromWaitTime(waitTime),
       lastUpdated: 'Just now',
-      comment: comment || getDefaultComment(waitTime),
+      comment: comment || '', // Don't auto-fill, keep empty if no comment
       timestamp: Date.now() // Current timestamp
     };
     
@@ -1117,7 +1117,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       <motion.div 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.1 }}
         className='max-w-7xl mx-auto px-3 md:px-4'
       >
         {/* Real-Time Wait Times Section */}
@@ -1133,7 +1133,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Real-Time Wait Times
+            NYC Courts-Live Status
           </motion.h2>
 
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16'>
@@ -1146,7 +1146,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             >
               <div className="flex items-center gap-3 mb-4 md:mb-6">
                 <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white'>
-                  Interactive Court Info
+                  Report Wait Time
                 </h3>
                 {/* Pulsing LIVE indicator */}
                 <div className="flex items-center gap-2">
@@ -1328,7 +1328,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="space-y-2">
                     <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].time}</p>
                     <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Hudson River Park Courts'].timestamp)}</p>
-                    <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
+                    {waitTimes['Hudson River Park Courts'].comment ? (
+                      <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic">No comment</p>
+                    )}
                   </div>
                 </div>
                 
@@ -1341,7 +1345,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="space-y-2">
                     <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].time}</p>
                     <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Pier 42'].timestamp)}</p>
-                    <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
+                    {waitTimes['Pier 42'].comment ? (
+                      <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic">No comment</p>
+                    )}
                   </div>
                 </div>
                 
@@ -1354,7 +1362,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="space-y-2">
                     <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].time}</p>
                     <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Brian Watkins Courts'].timestamp)}</p>
-                    <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
+                    {waitTimes['Brian Watkins Courts'].comment ? (
+                      <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic">No comment</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1958,6 +1970,27 @@ const Demo = () => {
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
+      {/* Header - Disappears on scroll */}
+      <AnimatePresence>
+        {showNav && (
+          <motion.header 
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className='fixed top-0 left-0 right-0 z-50'
+          >
+            <div className='container mx-auto px-4 py-3'>
+              <div className='flex items-center justify-center'>
+                <h1 className='text-lg md:text-xl font-semibold text-white text-center drop-shadow-lg'>
+                  Check Wait Times • Find a Court
+                </h1>
+              </div>
+            </div>
+          </motion.header>
+        )}
+      </AnimatePresence>
+
       {/* Navigation Bar */}
       <AnimatePresence>
         {showNav && (
@@ -1973,12 +2006,12 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute top-2 left-2 z-60 md:-top-24 lg:-top-20'
+              className='absolute top-3 left-2 z-60 md:-top-24 lg:-top-20'
             >
               <img 
                 src='/Untitled design.png' 
                 alt='NYC Tennis Club Logo' 
-                className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
+                className='h-40 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
                 style={{ background: 'transparent' }}
               />
             </motion.div>
