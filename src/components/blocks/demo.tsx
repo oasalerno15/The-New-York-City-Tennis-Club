@@ -1182,7 +1182,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           handleReportWaitTime('Hudson River Park Courts', hudsonSelectRef.current?.value || '', hudsonCommentRef.current?.value);
                         }}
                         disabled={reporting === 'Hudson River Park Courts'}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                        className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
                           reporting === 'Hudson River Park Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Hudson River Park Courts'
@@ -1228,7 +1228,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           handleReportWaitTime('Pier 42', pierSelectRef.current?.value || '', pierCommentRef.current?.value);
                         }}
                         disabled={reporting === 'Pier 42'}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                        className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
                           reporting === 'Pier 42' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Pier 42'
@@ -1274,7 +1274,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           handleReportWaitTime('Brian Watkins Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value);
                         }}
                         disabled={reporting === 'Brian Watkins Courts'}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                        className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
                           reporting === 'Brian Watkins Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Brian Watkins Courts'
