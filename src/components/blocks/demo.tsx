@@ -437,6 +437,29 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Ensure proper scrolling on mobile
+  useEffect(() => {
+    const enableMobileScrolling = () => {
+      // Remove any potential scroll blocking
+      document.body.style.overflow = 'auto';
+      document.body.style.position = 'relative';
+      document.body.style.height = 'auto';
+      
+      // Enable touch scrolling on iOS
+      (document.body.style as CSSStyleDeclaration & { webkitOverflowScrolling: string }).webkitOverflowScrolling = 'touch';
+    };
+
+    // Enable scrolling immediately
+    enableMobileScrolling();
+    
+    // Also enable on window resize
+    window.addEventListener('resize', enableMobileScrolling);
+    
+    return () => {
+      window.removeEventListener('resize', enableMobileScrolling);
+    };
+  }, []);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -518,7 +541,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   };
 
   // Handle reporting wait times
-  const handleReportWaitTime = async (courtName: string, waitTime: string, comment: string = '') => {
+  const handleReportWaitTime = async (courtName: keyof typeof waitTimes, waitTime: string, comment: string = '') => {
     if (!waitTime || waitTime === 'Select wait time...') {
       alert('Please select a wait time before reporting');
       return;
@@ -1325,7 +1348,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="space-y-2">
                     <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].time}</p>
                     <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Hudson River Park Courts'].timestamp)}</p>
-                    <p className="text-sm text-gray-600 italic">"{waitTimes['Hudson River Park Courts'].comment}"</p>
+                    <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
                   </div>
                 </div>
                 
@@ -1338,7 +1361,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="space-y-2">
                     <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].time}</p>
                     <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Pier 42'].timestamp)}</p>
-                    <p className="text-sm text-gray-600 italic">"{waitTimes['Pier 42'].comment}"</p>
+                    <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
                   </div>
                 </div>
                 
@@ -1351,7 +1374,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="space-y-2">
                     <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].time}</p>
                     <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Brian Watkins Courts'].timestamp)}</p>
-                    <p className="text-sm text-gray-600 italic">"{waitTimes['Brian Watkins Courts'].comment}"</p>
+                    <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
                   </div>
                 </div>
               </div>
@@ -1958,13 +1981,13 @@ const Demo = () => {
               />
             </motion.div>
             
-        <div className='container mx-auto px-4 py-14 md:py-18'>
-          <div className='flex items-center justify-center'>
-              {/* Navigation Links - Centered */}
-              {/* Navigation buttons removed as requested */}
+            <div className='container mx-auto px-4 py-14 md:py-18'>
+              <div className='flex items-center justify-center'>
+                {/* Navigation Links - Centered */}
+                {/* Navigation buttons removed as requested */}
+              </div>
             </div>
-          </div>
-        </motion.nav>
+          </motion.nav>
         )}
       </AnimatePresence>
 
