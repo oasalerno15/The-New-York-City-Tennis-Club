@@ -371,6 +371,72 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasPlayed, setHasPlayed] = useState(false);
 
+  // State for wait times and live updates
+  const [waitTimes, setWaitTimes] = useState({
+    'Hudson River Park Courts': { 
+      time: 'Less than 1 hour', 
+      status: 'green', 
+      lastUpdated: '12 min ago',
+      comment: 'Great courts, quick access today!',
+      timestamp: Date.now() - (12 * 60 * 1000) // 12 minutes ago
+    },
+    'Pier 42': { 
+      time: '1-2 hours', 
+      status: 'yellow', 
+      lastUpdated: '45 min ago',
+      comment: 'Busy but worth the wait',
+      timestamp: Date.now() - (45 * 60 * 1000) // 45 minutes ago
+    },
+    'Brian Watkins Courts': { 
+      time: 'More than 2 hours', 
+      status: 'red', 
+      lastUpdated: '1 hour ago',
+      comment: 'Long line, bring a book',
+      timestamp: Date.now() - (60 * 60 * 1000) // 1 hour ago
+    }
+  });
+
+  const [reporting, setReporting] = useState<string | null>(null);
+  const [reportSuccess, setReportSuccess] = useState<string | null>(null);
+  const [comments, setComments] = useState({
+    'Hudson River Park Courts': '',
+    'Pier 42': '',
+    'Brian Watkins Courts': ''
+  });
+
+  // Refs for form elements
+  const hudsonSelectRef = useRef<HTMLSelectElement>(null);
+  const hudsonCommentRef = useRef<HTMLInputElement>(null);
+  const pierSelectRef = useRef<HTMLSelectElement>(null);
+  const pierCommentRef = useRef<HTMLInputElement>(null);
+  const brianSelectRef = useRef<HTMLSelectElement>(null);
+  const brianCommentRef = useRef<HTMLInputElement>(null);
+
+  // Function to format time difference
+  const formatTimeDifference = (timestamp: number) => {
+    const now = Date.now();
+    const diffMs = now - timestamp;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    return `${Math.floor(diffHours / 24)} day${Math.floor(diffHours / 24) !== 1 ? 's' : ''} ago`;
+  };
+
+  // State to trigger timestamp updates
+  const [timeUpdate, setTimeUpdate] = useState(0);
+
+  // Update timestamps every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeUpdate(prev => prev + 1);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -448,6 +514,65 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       setSelectedPermitStatuses(prev => [...prev, permitStatus]);
     } else {
       setSelectedPermitStatuses(prev => prev.filter(ps => ps !== permitStatus));
+    }
+  };
+
+  // Handle reporting wait times
+  const handleReportWaitTime = async (courtName: string, waitTime: string, comment: string = '') => {
+    if (!waitTime || waitTime === 'Select wait time...') {
+      alert('Please select a wait time before reporting');
+      return;
+    }
+
+    setReporting(courtName);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Update wait time with comment and current timestamp
+    const newWaitTimes = { ...waitTimes };
+    newWaitTimes[courtName] = {
+      time: waitTime,
+      status: getStatusFromWaitTime(waitTime),
+      lastUpdated: 'Just now',
+      comment: comment || getDefaultComment(waitTime),
+      timestamp: Date.now() // Current timestamp
+    };
+    
+    setWaitTimes(newWaitTimes);
+    setReporting(null);
+    setReportSuccess(courtName);
+    
+    // Clear success message after 3 seconds
+    setTimeout(() => setReportSuccess(null), 3000);
+  };
+
+  // Helper function to get default comment based on wait time
+  const getDefaultComment = (waitTime: string) => {
+    if (waitTime.includes('Less than 1 hour')) return 'Quick access, great conditions!';
+    if (waitTime.includes('1-2 hours')) return 'Moderate wait, bring a snack';
+    if (waitTime.includes('2-3 hours')) return 'Long wait, maybe try another time';
+    if (waitTime.includes('More than 3 hours')) return 'Very busy, consider alternatives';
+    return 'Court status updated';
+  };
+
+  // Helper function to determine status color from wait time
+  const getStatusFromWaitTime = (waitTime: string) => {
+    if (waitTime.includes('Less than 1 hour')) return 'green';
+    if (waitTime.includes('1-2 hours')) return 'yellow';
+    if (waitTime.includes('2-3 hours')) return 'orange';
+    if (waitTime.includes('More than 3 hours')) return 'red';
+    return 'gray';
+  };
+
+  // Get status color for display
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'green': return 'bg-green-500';
+      case 'yellow': return 'bg-yellow-500';
+      case 'orange': return 'bg-orange-500';
+      case 'red': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
   };
 
@@ -679,13 +804,13 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         /* Animated Hover Bars - From Uiverse.io by joe-watson-sbf */
         .card {
           width: 100%;
-          max-width: 500px;
-          height: 280px;
+          max-width: 600px;
+          height: 350px;
           border-radius: 12px;
           background: #1B3A2E;
           display: flex;
-          gap: 10px;
-          padding: 1em;
+          gap: 12px;
+          padding: 1.2em;
           margin: 0 auto;
         }
 
@@ -694,7 +819,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           flex: 1;
           overflow: hidden;
           cursor: pointer;
-          border-radius: 6px;
+          border-radius: 8px;
           transition: all .5s;
           background: white;
           border: 2px solid #1B3A2E;
@@ -704,19 +829,20 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .card > div:hover {
-          flex: 5;
+          flex: 6;
         }
 
         .card > div span {
-          min-width: 18em;
-          padding: 1.2em;
+          min-width: 22em;
+          padding: 1.5em;
           text-align: center;
           transform: rotate(-90deg);
           transition: all .5s;
           text-transform: uppercase;
           color: #1B3A2E;
           letter-spacing: .1em;
-          font-size: 1em;
+          font-size: 1.1em;
+          font-weight: 600;
         }
 
         .card > div:hover span {
@@ -728,16 +854,16 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           .card {
             width: 100%;
             max-width: 100%;
-            height: 200px;
+            height: 250px;
             flex-direction: column;
-            gap: 8px;
-            padding: 0.8em;
+            gap: 10px;
+            padding: 1em;
           }
           
           .card > div span {
             min-width: auto;
-            font-size: 0.9em;
-            padding: 0.8em;
+            font-size: 1em;
+            padding: 1em;
           }
           
           .card > div:hover {
@@ -827,34 +953,34 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .comment-input-inline input {
           width: 100%;
-          padding: 16px 20px;
+          padding: 18px 24px;
           border: 2px solid rgba(27, 58, 46, 0.4);
-          border-radius: 10px;
+          border-radius: 12px;
           background: white;
           color: #374151;
-          font-size: 1.1em;
+          font-size: 1.2em;
           transition: all 0.3s ease;
         }
 
         .comment-input-inline input:focus {
           outline: none;
           border-color: rgba(27, 58, 46, 0.7);
-          box-shadow: 0 0 0 2px rgba(27, 58, 46, 0.1);
+          box-shadow: 0 0 0 3px rgba(27, 58, 46, 0.1);
         }
 
         .comment-input-inline input::placeholder {
           color: #9ca3af;
-          font-size: 0.75em;
+          font-size: 0.8em;
         }
 
         /* Wait Time Controls */
         .wait-time-controls {
           position: absolute;
-          bottom: 120px;
-          left: 15px;
-          right: 15px;
+          bottom: 140px;
+          left: 20px;
+          right: 20px;
           display: flex;
-          gap: 12px;
+          gap: 16px;
           opacity: 0;
           visibility: hidden;
           transition: all 0.3s ease;
@@ -873,12 +999,12 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .wait-time-selector select {
           width: 100%;
-          padding: 10px 12px;
+          padding: 14px 18px;
           border: 2px solid rgba(27, 58, 46, 0.4);
-          border-radius: 8px;
+          border-radius: 10px;
           background: white;
           color: #374151;
-          font-size: 0.9em;
+          font-size: 1em;
           transition: all 0.3s ease;
           cursor: pointer;
         }
@@ -886,16 +1012,16 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .wait-time-selector select:focus {
           outline: none;
           border-color: rgba(27, 58, 46, 0.7);
-          box-shadow: 0 0 0 2px rgba(27, 58, 46, 0.1);
+          box-shadow: 0 0 0 3px rgba(27, 58, 46, 0.1);
         }
 
         .report-btn {
-          padding: 10px 20px;
+          padding: 14px 24px;
           background: rgba(27, 58, 46, 0.9);
           color: white;
           border: none;
-          border-radius: 8px;
-          font-size: 0.9em;
+          border-radius: 10px;
+          font-size: 1em;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
@@ -958,6 +1084,30 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             padding: 0.5em;
           }
         }
+
+        /* Custom pulsing animation for LIVE indicator */
+        @keyframes livePulse {
+          0% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(1.1);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .live-indicator {
+          animation: livePulse 2s ease-in-out infinite;
+        }
+
+        .live-dot {
+          animation: livePulse 1.5s ease-in-out infinite;
+        }
       `}</style>
       
       {/* Content Container - Constrained */}
@@ -991,82 +1141,154 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-white'>
-                Interactive Court Info
-              </h3>
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white'>
+                  Interactive Court Info
+                </h3>
+                {/* Pulsing LIVE indicator */}
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full live-dot"></div>
+                  <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
+                </div>
+              </div>
 
-              {/* Animated Hover Bars */}
-              <div className="card">
-                                <div>
-                  <span>Hudson River Park Courts</span>
-                  <div className="wait-time-controls">
-                    <div className="wait-time-selector">
-                      <select>
-                        <option value="">Select wait time...</option>
-                        <option value="less-than-1">Less than 1 hour</option>
-                        <option value="1-2">1-2 hours</option>
-                        <option value="2-3">2-3 hours</option>
-                        <option value="more-than-3">More than 3 hours</option>
-                      </select>
-                    </div>
-                    <button className="report-btn">Report</button>
+              {/* Clean, Mobile-Friendly Court Info Cards */}
+              <div className="space-y-4">
+                {/* Hudson River Park Courts */}
+                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Hudson River Park Courts</h4>
+                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Hudson River Park Courts'].status)} rounded-full`}></div>
                   </div>
-                  <div className="comment-input-inline">
-                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                  
+                  <div className="space-y-3">
+                    <div className="flex gap-3">
+                      <select 
+                        className="flex-1 px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        defaultValue={waitTimes['Hudson River Park Courts'].time}
+                        ref={hudsonSelectRef}
+                      >
+                        <option value="Select wait time...">Select wait time...</option>
+                        <option value="Less than 1 hour">Less than 1 hour</option>
+                        <option value="1-2 hours">1-2 hours</option>
+                        <option value="2-3 hours">2-3 hours</option>
+                        <option value="More than 3 hours">More than 3 hours</option>
+                      </select>
+                      <button 
+                        onClick={() => {
+                          handleReportWaitTime('Hudson River Park Courts', hudsonSelectRef.current?.value || '', hudsonCommentRef.current?.value);
+                        }}
+                        disabled={reporting === 'Hudson River Park Courts'}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                          reporting === 'Hudson River Park Courts' 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : reportSuccess === 'Hudson River Park Courts'
+                            ? 'bg-green-600 text-white scale-105'
+                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                        }`}
+                      >
+                        {reporting === 'Hudson River Park Courts' ? 'Reporting...' : 
+                         reportSuccess === 'Hudson River Park Courts' ? '✓ Reported!' : 'Report'}
+                      </button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Leave a comment about the wait time..." 
+                      className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                      ref={hudsonCommentRef}
+                    />
                   </div>
                 </div>
-                <div>
-                  <span>Pier 42</span>
-                  <div className="wait-time-controls">
-                    <div className="wait-time-selector">
-                      <select>
-                        <option value="">Select wait time...</option>
-                        <option value="less-than-1">Less than 1 hour</option>
-                        <option value="1-2">1-2 hours</option>
-                        <option value="2-3">2-3 hours</option>
-                        <option value="more-than-3">More than 3 hours</option>
-                      </select>
-                    </div>
-                    <button className="report-btn">Report</button>
+                
+                {/* Pier 42 */}
+                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Pier 42</h4>
+                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Pier 42'].status)} rounded-full`}></div>
                   </div>
-                  <div className="comment-input-inline">
-                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                  
+                  <div className="space-y-3">
+                    <div className="flex gap-3">
+                      <select 
+                        className="flex-1 px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        defaultValue={waitTimes['Pier 42'].time}
+                        ref={pierSelectRef}
+                      >
+                        <option value="Select wait time...">Select wait time...</option>
+                        <option value="Less than 1 hour">Less than 1 hour</option>
+                        <option value="1-2 hours">1-2 hours</option>
+                        <option value="2-3 hours">2-3 hours</option>
+                        <option value="More than 3 hours">More than 3 hours</option>
+                      </select>
+                      <button 
+                        onClick={() => {
+                          handleReportWaitTime('Pier 42', pierSelectRef.current?.value || '', pierCommentRef.current?.value);
+                        }}
+                        disabled={reporting === 'Pier 42'}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                          reporting === 'Pier 42' 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : reportSuccess === 'Pier 42'
+                            ? 'bg-green-600 text-white scale-105'
+                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                        }`}
+                      >
+                        {reporting === 'Pier 42' ? 'Reporting...' : 
+                         reportSuccess === 'Pier 42' ? '✓ Reported!' : 'Report'}
+                      </button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Leave a comment about the wait time..." 
+                      className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                      ref={pierCommentRef}
+                    />
                   </div>
                 </div>
-                <div>
-                  <span>Brian Watkins Courts</span>
-                  <div className="wait-time-controls">
-                    <div className="wait-time-selector">
-                      <select>
-                        <option value="">Select wait time...</option>
-                        <option value="less-than-1">Less than 1 hour</option>
-                        <option value="1-2">1-2 hours</option>
-                        <option value="2-3">2-3 hours</option>
-                        <option value="more-than-3">More than 3 hours</option>
+                
+                {/* Brian Watkins Courts */}
+                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Courts</h4>
+                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Brian Watkins Courts'].status)} rounded-full`}></div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex gap-3">
+                      <select 
+                        className="flex-1 px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        defaultValue={waitTimes['Brian Watkins Courts'].time}
+                        ref={brianSelectRef}
+                      >
+                        <option value="Select wait time...">Select wait time...</option>
+                        <option value="Less than 1 hour">Less than 1 hour</option>
+                        <option value="1-2 hours">1-2 hours</option>
+                        <option value="2-3 hours">2-3 hours</option>
+                        <option value="More than 3 hours">More than 3 hours</option>
                       </select>
+                      <button 
+                        onClick={() => {
+                          handleReportWaitTime('Brian Watkins Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value);
+                        }}
+                        disabled={reporting === 'Brian Watkins Courts'}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                          reporting === 'Brian Watkins Courts' 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : reportSuccess === 'Brian Watkins Courts'
+                            ? 'bg-green-600 text-white scale-105'
+                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                        }`}
+                      >
+                        {reporting === 'Brian Watkins Courts' ? 'Reporting...' : 
+                         reportSuccess === 'Brian Watkins Courts' ? '✓ Reported!' : 'Report'}
+                      </button>
                     </div>
-                    <button className="report-btn">Report</button>
-                  </div>
-                  <div className="comment-input-inline">
-                    <input type="text" placeholder="Leave a comment about the wait time..." />
-                  </div>
-                </div>
-                <div>
-                  <span>South Oxford Courts</span>
-                  <div className="wait-time-controls">
-                    <div className="wait-time-selector">
-                      <select>
-                        <option value="">Select wait time...</option>
-                        <option value="less-than-1">Less than 1 hour</option>
-                        <option value="1-2">1-2 hours</option>
-                        <option value="2-3">2-3 hours</option>
-                        <option value="more-than-3">More than 3 hours</option>
-                      </select>
-                    </div>
-                    <button className="report-btn">Report</button>
-                  </div>
-                  <div className="comment-input-inline">
-                    <input type="text" placeholder="Leave a comment about the wait time..." />
+                    <input 
+                      type="text" 
+                      placeholder="Leave a comment about the wait time..." 
+                      className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                      ref={brianCommentRef}
+                    />
                   </div>
                 </div>
               </div>
@@ -1081,53 +1303,55 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-white'>
-                Live Updates
-              </h3>
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <h3 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white'>
+                  Live Updates
+                </h3>
+                {/* Pulsing LIVE indicator */}
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full live-dot"></div>
+                  <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
+                </div>
+              </div>
 
               {/* Big Green Display Cards */}
-              <div className="cards">
-                {/* Hudson River Park Courts - Green */}
-                <div className="card green">
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="tip">Hudson River Park Courts</p>
-                      <p className="second-text">Less than 1 hour • Updated 12 min ago</p>
-                    </div>
+              <div className="space-y-4">
+                {/* Hudson River Park Courts */}
+                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Hudson River Park Courts</h4>
+                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Hudson River Park Courts'].status)} rounded-full`}></div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].time}</p>
+                    <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Hudson River Park Courts'].timestamp)}</p>
+                    <p className="text-sm text-gray-600 italic">"{waitTimes['Hudson River Park Courts'].comment}"</p>
                   </div>
                 </div>
                 
-                {/* Pier 42 - Blue */}
-                <div className="card blue">
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="tip">Pier 42</p>
-                      <p className="second-text">1-2 hours • Updated 45 min ago</p>
-                    </div>
+                {/* Pier 42 */}
+                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Pier 42</h4>
+                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Pier 42'].status)} rounded-full`}></div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].time}</p>
+                    <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Pier 42'].timestamp)}</p>
+                    <p className="text-sm text-gray-600 italic">"{waitTimes['Pier 42'].comment}"</p>
                   </div>
                 </div>
                 
-                {/* Brian Watkins Courts - Red */}
-                <div className="card red">
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="tip">Brian Watkins Courts</p>
-                      <p className="second-text">More than 2 hours • Updated 1 hour ago</p>
-                    </div>
+                {/* Brian Watkins Courts */}
+                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Courts</h4>
+                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Brian Watkins Courts'].status)} rounded-full`}></div>
                   </div>
-                </div>
-                
-                {/* South Oxford Courts - Green */}
-                <div className="card green">
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="tip">South Oxford Courts</p>
-                      <p className="second-text">Less than 1 hour • Updated 8 min ago</p>
-                    </div>
+                  <div className="space-y-2">
+                    <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].time}</p>
+                    <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Brian Watkins Courts'].timestamp)}</p>
+                    <p className="text-sm text-gray-600 italic">"{waitTimes['Brian Watkins Courts'].comment}"</p>
                   </div>
                 </div>
               </div>
@@ -1259,8 +1483,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 {[
                   { value: 'Required & Enforced', label: 'Required & Enforced' },
                   { value: 'Required, but Rarely Checked', label: 'Required, Rarely Checked' },
-                  { value: 'Not Required', label: 'Not Required' },
-                  { value: 'Required', label: 'Required' }
+                  { value: 'Not Required', label: 'Not Required' }
                 ].map((permitStatus, index) => (
                   <motion.div
                     key={permitStatus.value}
