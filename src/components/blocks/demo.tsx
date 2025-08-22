@@ -437,29 +437,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Ensure proper scrolling on mobile
-  useEffect(() => {
-    const enableMobileScrolling = () => {
-      // Remove any potential scroll blocking
-      document.body.style.overflow = 'auto';
-      document.body.style.position = 'relative';
-      document.body.style.height = 'auto';
-      
-      // Enable touch scrolling on iOS
-      (document.body.style as CSSStyleDeclaration & { webkitOverflowScrolling: string }).webkitOverflowScrolling = 'touch';
-    };
-
-    // Enable scrolling immediately
-    enableMobileScrolling();
-    
-    // Also enable on window resize
-    window.addEventListener('resize', enableMobileScrolling);
-    
-    return () => {
-      window.removeEventListener('resize', enableMobileScrolling);
-    };
-  }, []);
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -474,13 +451,15 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     const playVideo = async () => {
       try {
         video.load();
+        // Try to play immediately
         await video.play();
         setHasPlayed(true);
+        console.log('Video autoplay successful');
       } catch (error) {
-        console.log('Autoplay failed, user interaction required');
+        console.log('Autoplay failed, user interaction required:', error);
         // On mobile, we might need user interaction
         const playOnInteraction = () => {
-          video.play().catch(() => {});
+          video.play().catch((e) => console.log('Play on interaction failed:', e));
           document.removeEventListener('touchstart', playOnInteraction);
           document.removeEventListener('click', playOnInteraction);
         };
@@ -493,6 +472,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed) {
+            console.log('Video in view, attempting to play');
             playVideo();
           }
         });
@@ -1900,26 +1880,48 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className='relative'
               >
-                {/* Video instead of 3D phone */}
-                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] bg-transparent'>
+                {/* Tennis Video in the center */}
+                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] bg-transparent relative'>
                   {!isMounted ? (
-                    <div className='w-full h-full flex items-center justify-center text-gray-500'>
-                      Loading video...
+                    <div className='w-full h-full flex items-center justify-center text-gray-500 bg-gray-100 rounded-lg'>
+                      <div className='text-center'>
+                        <div className='text-6xl mb-4'>🎾</div>
+                        <p className='text-lg font-semibold'>Loading Tennis Video...</p>
+                      </div>
                     </div>
                   ) : (
                     <video 
                       ref={videoRef}
-                      className='w-full h-full object-contain bg-transparent transform -translate-y-10 md:-translate-y-14 lg:-translate-y-18 scale-100 md:scale-110'
+                      className='w-full h-full object-contain bg-gray-100 rounded-lg shadow-2xl'
                       muted
                       playsInline
                       autoPlay
                       loop
                       disablePictureInPicture
                       style={{ outline: 'none' }}
+                      onError={(e) => console.log('Video error:', e)}
+                      onLoadStart={() => console.log('Video loading started')}
+                      onCanPlay={() => console.log('Video can play')}
                     >
                       <source src="/mixkit-two-people-playing-tennis-aerial-view-880-hd-ready.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
+                  )}
+                  
+                  {/* Video overlay with play button for mobile */}
+                  {isMounted && (
+                    <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+                      <div className='bg-black/20 rounded-full p-4 pointer-events-auto cursor-pointer' 
+                           onClick={() => {
+                             if (videoRef.current) {
+                               videoRef.current.play().catch(() => {});
+                             }
+                           }}>
+                        <div className='w-16 h-16 bg-white/90 rounded-full flex items-center justify-center'>
+                          <div className='w-0 h-0 border-l-[12px] border-l-[#1B3A2E] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1'></div>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -1971,12 +1973,12 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute -top-28 left-4 z-60 md:-top-24 lg:-top-20'
+              className='absolute top-2 left-2 z-60 md:-top-24 lg:-top-20'
             >
               <img 
                 src='/Untitled design.png' 
                 alt='NYC Tennis Club Logo' 
-                className='h-56 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
+                className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
                 style={{ background: 'transparent' }}
               />
             </motion.div>

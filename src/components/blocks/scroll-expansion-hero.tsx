@@ -53,33 +53,6 @@ const ScrollExpandMedia = ({
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Allow normal scrolling on mobile devices
-      if (window.innerWidth <= 768) {
-        if (mediaFullyExpanded) {
-          // On mobile, allow normal scrolling once expanded
-          return;
-        }
-        // Only block scroll during expansion animation on mobile
-        if (scrollProgress < 1) {
-          e.preventDefault();
-          const scrollDelta = e.deltaY * 0.001;
-          const newProgress = Math.min(
-            Math.max(scrollProgress + scrollDelta, 0),
-            1
-          );
-          setScrollProgress(newProgress);
-
-          if (newProgress >= 1) {
-            setMediaFullyExpanded(true);
-            setShowContent(true);
-          } else if (newProgress < 0.75) {
-            setShowContent(false);
-          }
-        }
-        return;
-      }
-
-      // Desktop behavior
       if (mediaFullyExpanded && e.deltaY < 0 && window.scrollY <= 5) {
         setMediaFullyExpanded(false);
         e.preventDefault();
@@ -111,34 +84,6 @@ const ScrollExpandMedia = ({
       const touchY = e.touches[0].clientY;
       const deltaY = touchStartY - touchY;
 
-      // Allow normal scrolling on mobile devices
-      if (window.innerWidth <= 768) {
-        if (mediaFullyExpanded) {
-          // On mobile, allow normal scrolling once expanded
-          return;
-        }
-        // Only block touch during expansion animation on mobile
-        if (scrollProgress < 1) {
-          e.preventDefault();
-          const scrollFactor = deltaY < 0 ? 0.008 : 0.005;
-          const scrollDelta = deltaY * scrollFactor;
-          const newProgress = Math.min(
-            Math.max(scrollProgress + scrollDelta, 0),
-            1
-          );
-          setScrollProgress(newProgress);
-
-          if (newProgress >= 1) {
-            setMediaFullyExpanded(true);
-            setShowContent(true);
-          } else if (newProgress < 0.75) {
-            setShowContent(false);
-          }
-        }
-        return;
-      }
-
-      // Desktop behavior
       if (mediaFullyExpanded && deltaY < -20 && window.scrollY <= 5) {
         setMediaFullyExpanded(false);
         e.preventDefault();
