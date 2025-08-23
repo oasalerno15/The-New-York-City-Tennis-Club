@@ -172,7 +172,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
               <p style="margin: 2px 0;"><strong>Season:</strong> ${court.datesOpen}</p>
               <p style="margin: 2px 0;"><strong>Permit:</strong> ${court.permitStatus}</p>
             </div>
-            ${court.description ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #555; border-top: 1px solid #eee; padding-top: 8px; line-height: 1.4;">${court.description.substring(0, 150)}${court.description.length > 150 ? '...' : ''}</p>` : ''}
+            ${court.description ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #555; border-top: 1px solid #eee; padding-top: 8px; line-height: 1.4;">${court.description}</p>` : ''}
           </div>
         `
       });
@@ -266,16 +266,14 @@ const QAItem = ({ qa }: { qa: { question: string; answer: string } }) => {
           <h3 className={`text-xl md:text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
             {qa.question}
           </h3>
-          <motion.svg
-            className={`w-6 h-6 transition-all duration-300 ${isHovered ? 'text-green-600' : 'text-gray-400'}`}
+          <motion.img
+            src="/racket.png"
+            alt="Tennis racket"
+            className={`w-6 h-6 transition-all duration-300 ${isHovered ? 'filter brightness-0 invert' : 'filter brightness-0'}`}
             animate={{ rotate: isHovered ? 180 : 0 }}
             transition={{ duration: 0.3 }}
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
-          </motion.svg>
+            style={{ filter: isHovered ? 'brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(120deg)' : 'brightness(0)' }}
+          />
         </div>
       </div>
 
@@ -1793,11 +1791,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
                     </svg>
                   </div>
-                  <span className='text-lg text-gray-700 font-medium'>Never wait again</span>
+                  <span className='text-lg text-gray-700 font-medium'>Never guess again</span>
                 </div>
               </motion.div>
 
-              <motion.div
+                            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1807,15 +1805,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 {/* QR Code section removed */}
               </motion.div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 1.2 }}
-                className='text-sm text-gray-500'
-              >
-                *Rated best tennis court finder of 2024 by NYC Parks & Recreation.
-              </motion.p>
+
             </motion.div>
 
             {/* Right Side - 3D iPhone Mockup */}
@@ -1836,14 +1826,14 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 {/* Tennis Video in the center */}
                 <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] relative mobile-video'>
                   <video 
+                    ref={videoRef}
                     className='w-full h-full object-contain rounded-lg'
                     muted
                     playsInline
-                    autoPlay
                     onEnded={(e) => {
-                      // Stop the video when it ends
+                      // Stop the video when it ends and don't replay
                       e.currentTarget.pause();
-                      e.currentTarget.currentTime = 0;
+                      setHasPlayed(true);
                     }}
                     style={{ outline: 'none' }}
                   >
