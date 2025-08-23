@@ -1941,13 +1941,14 @@ const Demo = () => {
       {/* Logo Position Control Panel */}
       <div className='fixed top-4 right-4 z-[9999] bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200'>
         <div className='text-xs font-semibold text-gray-700 mb-2 text-center'>Logo Position</div>
+        <div className='text-xs text-gray-500 mb-2 text-center'>Current: ({logoPosition.x}, {logoPosition.y})</div>
         <div className='space-y-2'>
           <div className='flex items-center gap-2'>
             <span className='text-xs text-gray-600 w-8'>X:</span>
             <input
               type='range'
-              min='-100'
-              max='100'
+              min='-200'
+              max='200'
               value={logoPosition.x}
               onChange={(e) => handleLogoPositionChange('x', parseInt(e.target.value))}
               className='w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
@@ -1959,8 +1960,8 @@ const Demo = () => {
             <span className='text-xs text-gray-600 w-8'>Y:</span>
             <input
               type='range'
-              min='-100'
-              max='100'
+              min='-200'
+              max='200'
               value={logoPosition.y}
               onChange={(e) => handleLogoPositionChange('y', parseInt(e.target.value))}
               className='w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
@@ -1989,10 +1990,7 @@ const Demo = () => {
             className='fixed top-0 left-0 right-0 z-50'
           >
             {/* Logo - Positioned at very top left */}
-            <motion.div 
-              initial={{ x: -100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            <div 
               className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
               style={{
                 transform: `translate(${logoPosition.x}px, ${logoPosition.y}px)`,
@@ -2005,7 +2003,7 @@ const Demo = () => {
                 className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
                 style={{ background: 'transparent' }}
               />
-            </motion.div>
+            </div>
             
             <div className='container mx-auto px-4 py-12 md:py-14 lg:py-18'>
               <div className='flex items-center justify-center'>
