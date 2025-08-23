@@ -1887,8 +1887,6 @@ const Demo = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  };
-
   return (
     <div className='min-h-screen overflow-x-hidden'>
       {/* Header - Disappears on scroll */}
