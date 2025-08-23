@@ -1878,14 +1878,24 @@ const Demo = () => {
           >
             <div className='container mx-auto px-4 py-2 md:py-3'>
               <div className='flex items-center justify-center'>
-                <h1 
-                  className='text-base md:text-lg lg:text-xl font-semibold text-white text-center drop-shadow-lg leading-tight mobile-header'
-                  style={{ 
-                    transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
-                  }}
-                >
-                  Check Wait Times • Find a Court
-                </h1>
+                <div className='text-center'>
+                  <h1 
+                    className='text-base md:text-lg lg:text-xl font-semibold text-white text-center drop-shadow-lg leading-tight mobile-header'
+                    style={{ 
+                      transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
+                    }}
+                  >
+                    Check Wait Times • Find a Court
+                  </h1>
+                  <p 
+                    className='text-sm md:text-base text-white/90 text-center drop-shadow-lg leading-tight mt-1'
+                    style={{ 
+                      transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
+                    }}
+                  >
+                    Your free navigator to NYC public tennis
+                  </p>
+                </div>
               </div>
             </div>
           </motion.header>
@@ -1907,7 +1917,7 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
+              className='absolute top-3 -left-4 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
             >
               <img 
                 src='/Untitled design.png' 

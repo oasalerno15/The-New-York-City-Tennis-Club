@@ -302,7 +302,8 @@ const ScrollExpandMedia = ({
                           texts={[
                             "Find Your Court.",
                             "Beat the Wait.",
-                            "For players."
+                            "For players.",
+                            "By players."
                           ]}
                           morphTime={0.5}
                           cooldownTime={1.0}
