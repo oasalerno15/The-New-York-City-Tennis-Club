@@ -1907,7 +1907,7 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute top-3 left-2 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
+              className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
             >
               <img 
                 src='/Untitled design.png' 
