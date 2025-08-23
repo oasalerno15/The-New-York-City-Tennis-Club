@@ -162,7 +162,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
       // Info window for court details
       const infoWindow = new google.maps.InfoWindow({
         content: `
-          <div style="color: black; font-family: Arial, sans-serif; max-width: 300px;">
+          <div style="color: black; font-family: Arial, sans-serif; max-width: 300px; padding: 8px;">
             <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${court.name}</h3>
             <p style="margin: 4px 0; font-size: 12px; color: #666;">${court.address}</p>
             <div style="margin: 8px 0;">
@@ -172,7 +172,7 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
               <p style="margin: 2px 0;"><strong>Season:</strong> ${court.datesOpen}</p>
               <p style="margin: 2px 0;"><strong>Permit:</strong> ${court.permitStatus}</p>
             </div>
-            ${court.description ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #555; border-top: 1px solid #eee; padding-top: 8px;">${court.description.substring(0, 150)}${court.description.length > 150 ? '...' : ''}</p>` : ''}
+            ${court.description ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #555; border-top: 1px solid #eee; padding-top: 8px; line-height: 1.4;">${court.description.substring(0, 150)}${court.description.length > 150 ? '...' : ''}</p>` : ''}
           </div>
         `
       });
@@ -1068,6 +1068,27 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             word-break: break-word;
             max-width: 100%;
           }
+          
+          /* Mobile card padding adjustments */
+          .bg-white.border-2.border-\[#1B3A2E\].rounded-lg {
+            padding: 12px !important;
+          }
+          
+          /* Mobile button container */
+          .flex.gap-2.flex-wrap {
+            gap: 8px !important;
+          }
+          
+          /* Mobile select and button sizing */
+          .flex-1.min-w-0 {
+            min-width: 0 !important;
+            flex-shrink: 1 !important;
+          }
+          
+          .px-2.py-2.rounded-lg {
+            padding: 6px 8px !important;
+            font-size: 11px !important;
+          }
         }
         
         /* Extra small mobile devices */
@@ -1165,9 +1186,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-wrap">
                       <select 
-                        className="flex-1 px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
                         defaultValue={waitTimes['Hudson River Park Courts'].time}
                         ref={hudsonSelectRef}
                       >
@@ -1182,7 +1203,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           handleReportWaitTime('Hudson River Park Courts', hudsonSelectRef.current?.value || '', hudsonCommentRef.current?.value);
                         }}
                         disabled={reporting === 'Hudson River Park Courts'}
-                        className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
+                        className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
                           reporting === 'Hudson River Park Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Hudson River Park Courts'
@@ -1211,9 +1232,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-wrap">
                       <select 
-                        className="flex-1 px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
                         defaultValue={waitTimes['Pier 42'].time}
                         ref={pierSelectRef}
                       >
@@ -1228,7 +1249,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           handleReportWaitTime('Pier 42', pierSelectRef.current?.value || '', pierCommentRef.current?.value);
                         }}
                         disabled={reporting === 'Pier 42'}
-                        className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
+                        className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
                           reporting === 'Pier 42' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Pier 42'
@@ -1257,9 +1278,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-wrap">
                       <select 
-                        className="flex-1 px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
                         defaultValue={waitTimes['Brian Watkins Courts'].time}
                         ref={brianSelectRef}
                       >
@@ -1274,7 +1295,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           handleReportWaitTime('Brian Watkins Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value);
                         }}
                         disabled={reporting === 'Brian Watkins Courts'}
-                        className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap flex-shrink-0 ${
+                        className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
                           reporting === 'Brian Watkins Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Brian Watkins Courts'
@@ -1886,7 +1907,7 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute top-3 left-4 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
+              className='absolute top-3 left-2 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
             >
               <img 
                 src='/Untitled design.png' 
