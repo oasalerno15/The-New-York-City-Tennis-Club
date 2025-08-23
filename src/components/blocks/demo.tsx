@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Wrapper, Status } from '@googlemaps/react-wrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
+import { supabase, WaitTime, NewWaitTime } from '@/lib/supabase';
 
 // Interface for court data
 interface CourtData {
@@ -369,30 +370,13 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasPlayed, setHasPlayed] = useState(false);
 
-  // State for wait times and live updates
-  const [waitTimes, setWaitTimes] = useState({
-    'Hudson River Park Courts': { 
-      time: 'Less than 1 hour', 
-      status: 'green', 
-      lastUpdated: '12 min ago',
-      comment: 'Great courts, quick access today!',
-      timestamp: Date.now() - (12 * 60 * 1000) // 12 minutes ago
-    },
-    'Pier 42': { 
-      time: '1-2 hours', 
-      status: 'yellow', 
-      lastUpdated: '45 min ago',
-      comment: 'Busy but worth the wait',
-      timestamp: Date.now() - (45 * 60 * 1000) // 45 minutes ago
-    },
-    'Brian Watkins Courts': { 
-      time: 'More than 2 hours', 
-      status: 'red', 
-      lastUpdated: '1 hour ago',
-      comment: 'Long line, bring a book',
-      timestamp: Date.now() - (60 * 60 * 1000) // 1 hour ago
-    }
+  // State for wait times and live updates from Supabase
+  const [waitTimes, setWaitTimes] = useState<{ [key: string]: WaitTime | null }>({
+    'Hudson River Park Courts': null,
+    'Pier 42': null,
+    'Brian Watkins Courts': null
   });
+  const [waitTimesLoading, setWaitTimesLoading] = useState(true);
 
   const [reporting, setReporting] = useState<string | null>(null);
   const [reportSuccess, setReportSuccess] = useState<string | null>(null);
@@ -482,16 +466,92 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return () => observer.disconnect();
   }, [isMounted, hasPlayed]);
 
-  // Load courts data on component mount
+  // Load courts data and wait times on component mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       const courtsData = await loadCourtsData();
       setCourts(courtsData);
+      
+      // Test Supabase connection and load initial wait times
+      try {
+        const { data, error } = await supabase.from('wait_times').select('count').limit(1);
+        if (error) {
+          console.error('Supabase connection error:', error);
+        } else {
+          console.log('Supabase connected successfully!');
+          await loadWaitTimes();
+        }
+      } catch (error) {
+        console.error('Failed to connect to Supabase:', error);
+      }
+      
       setLoading(false);
     };
     
     loadData();
+  }, []);
+
+  // Load wait times from Supabase
+  const loadWaitTimes = async () => {
+    try {
+      setWaitTimesLoading(true);
+      const { data, error } = await supabase
+        .from('wait_times')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading wait times:', error);
+        return;
+      }
+
+      // Group by court name and get the most recent for each
+      const courtWaitTimes: { [key: string]: WaitTime | null } = {
+        'Hudson River Park Courts': null,
+        'Pier 42': null,
+        'Brian Watkins Courts': null
+      };
+
+      data?.forEach((waitTime) => {
+        if (courtWaitTimes[waitTime.court_name] === null) {
+          courtWaitTimes[waitTime.court_name] = waitTime;
+        }
+      });
+
+      setWaitTimes(courtWaitTimes);
+    } catch (error) {
+      console.error('Error loading wait times:', error);
+    } finally {
+      setWaitTimesLoading(false);
+    }
+  };
+
+  // Set up real-time subscription for wait times
+  useEffect(() => {
+    const subscription = supabase
+      .channel('wait_times_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wait_times'
+        },
+        async (payload) => {
+          console.log('Real-time update received:', payload);
+          
+          // Reload wait times when data changes
+          await loadWaitTimes();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleBoroughChange = (borough: string, checked: boolean) => {
@@ -518,8 +578,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     }
   };
 
-  // Handle reporting wait times
-  const handleReportWaitTime = async (courtName: keyof typeof waitTimes, waitTime: string, comment: string = '') => {
+  // Handle reporting wait times to Supabase
+  const handleReportWaitTime = async (courtName: string, waitTime: string, comment: string = '') => {
     if (!waitTime || waitTime === 'Select wait time...') {
       alert('Please select a wait time before reporting');
       return;
@@ -527,25 +587,42 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
     setReporting(courtName);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Update wait time with comment and current timestamp
-    const newWaitTimes = { ...waitTimes };
-    newWaitTimes[courtName] = {
-      time: waitTime,
-      status: getStatusFromWaitTime(waitTime),
-      lastUpdated: 'Just now',
-      comment: comment || '', // Don't auto-fill, keep empty if no comment
-      timestamp: Date.now() // Current timestamp
-    };
-    
-    setWaitTimes(newWaitTimes);
-    setReporting(null);
-    setReportSuccess(courtName);
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => setReportSuccess(null), 3000);
+    try {
+      // Create new wait time record
+      const newWaitTime: NewWaitTime = {
+        court_name: courtName,
+        wait_time: waitTime,
+        comment: comment || getDefaultComment(waitTime)
+      };
+
+      const { error } = await supabase
+        .from('wait_times')
+        .insert(newWaitTime);
+
+      if (error) {
+        throw error;
+      }
+
+      setReportSuccess(courtName);
+      
+      // Reset success state after 3 seconds
+      setTimeout(() => setReportSuccess(null), 3000);
+      
+      // Clear the comment input
+      if (courtName === 'Hudson River Park Courts' && hudsonCommentRef.current) {
+        hudsonCommentRef.current.value = '';
+      } else if (courtName === 'Pier 42' && pierCommentRef.current) {
+        pierCommentRef.current.value = '';
+      } else if (courtName === 'Brian Watkins Courts' && brianCommentRef.current) {
+        brianCommentRef.current.value = '';
+      }
+      
+    } catch (error) {
+      console.error('Error reporting wait time:', error);
+      alert('Failed to report wait time. Please try again.');
+    } finally {
+      setReporting(null);
+    }
   };
 
   // Helper function to get default comment based on wait time
@@ -1202,14 +1279,14 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#1B3A2E]">Hudson River Park Courts</h4>
-                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Hudson River Park Courts'].status)} rounded-full`}></div>
+                    <div className={`w-3 h-3 ${waitTimes['Hudson River Park Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Hudson River Park Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
                         className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
-                        defaultValue={waitTimes['Hudson River Park Courts'].time}
+                        defaultValue={waitTimes['Hudson River Park Courts']?.wait_time || "Select wait time..."}
                         ref={hudsonSelectRef}
                       >
                         <option value="Select wait time...">Select wait time...</option>
@@ -1248,14 +1325,14 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#1B3A2E]">Pier 42</h4>
-                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Pier 42'].status)} rounded-full`}></div>
+                    <div className={`w-3 h-3 ${waitTimes['Pier 42'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Pier 42'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
                         className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
-                        defaultValue={waitTimes['Pier 42'].time}
+                        defaultValue={waitTimes['Pier 42']?.wait_time || "Select wait time..."}
                         ref={pierSelectRef}
                       >
                         <option value="Select wait time...">Select wait time...</option>
@@ -1294,14 +1371,14 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Courts</h4>
-                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Brian Watkins Courts'].status)} rounded-full`}></div>
+                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
                         className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
-                        defaultValue={waitTimes['Brian Watkins Courts'].time}
+                        defaultValue={waitTimes['Brian Watkins Courts']?.wait_time || "Select wait time..."}
                         ref={brianSelectRef}
                       >
                         <option value="Select wait time...">Select wait time...</option>
@@ -1360,19 +1437,34 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
               {/* Big Green Display Cards */}
               <div className="space-y-4">
+                {waitTimesLoading && (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B3A2E]"></div>
+                    <p className="mt-2 text-gray-600">Loading wait times...</p>
+                  </div>
+                )}
                 {/* Hudson River Park Courts */}
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#1B3A2E]">Hudson River Park Courts</h4>
-                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Hudson River Park Courts'].status)} rounded-full`}></div>
+                    <div className={`w-3 h-3 ${waitTimes['Hudson River Park Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Hudson River Park Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].time}</p>
-                    <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Hudson River Park Courts'].timestamp)}</p>
-                    {waitTimes['Hudson River Park Courts'].comment ? (
-                      <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
+                    {waitTimes['Hudson River Park Courts'] ? (
+                      <>
+                        <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].wait_time}</p>
+                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Hudson River Park Courts'].created_at).getTime())}</p>
+                        {waitTimes['Hudson River Park Courts'].comment ? (
+                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">No comment</p>
+                        )}
+                      </>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">No comment</p>
+                      <>
+                        <p className="text-gray-400 font-medium">No wait time reported</p>
+                        <p className="text-sm text-gray-400">Be the first to report!</p>
+                      </>
                     )}
                   </div>
                 </div>
@@ -1381,15 +1473,24 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#1B3A2E]">Pier 42</h4>
-                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Pier 42'].status)} rounded-full`}></div>
+                    <div className={`w-3 h-3 ${waitTimes['Pier 42'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Pier 42'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].time}</p>
-                    <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Pier 42'].timestamp)}</p>
-                    {waitTimes['Pier 42'].comment ? (
-                      <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
+                    {waitTimes['Pier 42'] ? (
+                      <>
+                        <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].wait_time}</p>
+                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Pier 42'].created_at).getTime())}</p>
+                        {waitTimes['Pier 42'].comment ? (
+                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">No comment</p>
+                        )}
+                      </>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">No comment</p>
+                      <>
+                        <p className="text-gray-400 font-medium">No wait time reported</p>
+                        <p className="text-sm text-gray-400">Be the first to report!</p>
+                      </>
                     )}
                   </div>
                 </div>
@@ -1398,15 +1499,24 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Courts</h4>
-                    <div className={`w-3 h-3 ${getStatusColor(waitTimes['Brian Watkins Courts'].status)} rounded-full`}></div>
+                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].time}</p>
-                    <p className="text-sm text-gray-500">Updated {formatTimeDifference(waitTimes['Brian Watkins Courts'].timestamp)}</p>
-                    {waitTimes['Brian Watkins Courts'].comment ? (
-                      <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
+                    {waitTimes['Brian Watkins Courts'] ? (
+                      <>
+                        <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].wait_time}</p>
+                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Brian Watkins Courts'].created_at).getTime())}</p>
+                        {waitTimes['Brian Watkins Courts'].comment ? (
+                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">No comment</p>
+                        )}
+                      </>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">No comment</p>
+                      <>
+                        <p className="text-gray-400 font-medium">No wait time reported</p>
+                        <p className="text-sm text-gray-400">Be the first to report!</p>
+                      </>
                     )}
                   </div>
                 </div>
