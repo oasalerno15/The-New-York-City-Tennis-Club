@@ -13,9 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The New York City Tennis Club - Real-Time Wait Times",
+  title: "NYC Tennis Courts - Live Wait Times",
   description: "Find real-time wait times and court availability across NYC's premier tennis facilities. Never wait for a court again with our innovative platform.",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  icons: {
+    icon: '/racket.png',
+    shortcut: '/racket.png',
+    apple: '/racket.png',
+  },
 };
 
 export default function RootLayout({
