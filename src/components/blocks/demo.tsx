@@ -1132,6 +1132,28 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .live-dot {
           animation: livePulse 1.5s ease-in-out infinite;
         }
+
+        /* Custom slider styling */
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          background: #1B3A2E;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider::-moz-range-thumb {
+          height: 16px;
+          width: 16px;
+          border-radius: 50%;
+          background: #1B3A2E;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
       `}</style>
       
       {/* Content Container - Constrained */}
@@ -1845,6 +1867,7 @@ const Demo = () => {
   
   // Header positioning controls
   const [headerPosition, setHeaderPosition] = useState({ x: 0, y: 55 });
+  const [logoPosition, setLogoPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1863,6 +1886,11 @@ const Demo = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Function to reset logo position
+  const resetLogoPosition = () => {
+    setLogoPosition({ x: 0, y: 0 });
+  };
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
@@ -1902,6 +1930,43 @@ const Demo = () => {
         )}
       </AnimatePresence>
 
+      {/* Logo Position Control Panel */}
+      <div className='fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200'>
+        <div className='text-xs font-semibold text-gray-700 mb-2 text-center'>Logo Position</div>
+        <div className='space-y-2'>
+          <div className='flex items-center gap-2'>
+            <span className='text-xs text-gray-600 w-8'>X:</span>
+            <input
+              type='range'
+              min='-100'
+              max='100'
+              value={logoPosition.x}
+              onChange={(e) => setLogoPosition(prev => ({ ...prev, x: parseInt(e.target.value) }))}
+              className='w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
+            />
+            <span className='text-xs text-gray-500 w-8 text-right'>{logoPosition.x}px</span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <span className='text-xs text-gray-600 w-8'>Y:</span>
+            <input
+              type='range'
+              min='-100'
+              max='100'
+              value={logoPosition.y}
+              onChange={(e) => setLogoPosition(prev => ({ ...prev, y: parseInt(e.target.value) }))}
+              className='w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
+            />
+            <span className='text-xs text-gray-500 w-8 text-right'>{logoPosition.y}px</span>
+          </div>
+          <button
+            onClick={resetLogoPosition}
+            className='w-full px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors'
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
       {/* Navigation Bar */}
       <AnimatePresence>
         {showNav && (
@@ -1917,7 +1982,10 @@ const Demo = () => {
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className='absolute top-3 -left-4 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
+              className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
+              style={{
+                transform: `translate(${logoPosition.x}px, ${logoPosition.y}px)`
+              }}
             >
               <img 
                 src='/Untitled design.png' 
