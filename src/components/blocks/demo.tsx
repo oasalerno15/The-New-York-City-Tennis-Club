@@ -1094,7 +1094,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           .mobile-logo {
             position: absolute !important;
             top: 12px !important;
-            left: -100px !important;
+            left: -50px !important;
             z-index: 60 !important;
           }
           
@@ -1867,7 +1867,7 @@ const Demo = () => {
   
   // Header positioning controls
   const [headerPosition, setHeaderPosition] = useState({ x: 0, y: 55 });
-  const [logoPosition, setLogoPosition] = useState({ x: -100, y: 0 });
+  const [logoPosition, setLogoPosition] = useState({ x: -50, y: 0 });
 
   useEffect(() => {
     window.scrollTo(0, 0);
