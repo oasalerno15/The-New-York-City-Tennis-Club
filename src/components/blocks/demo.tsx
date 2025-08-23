@@ -1890,6 +1890,14 @@ const Demo = () => {
   // Function to reset logo position
   const resetLogoPosition = () => {
     setLogoPosition({ x: 0, y: 0 });
+    console.log('Logo position reset to:', { x: 0, y: 0 });
+  };
+
+  // Function to handle logo position change
+  const handleLogoPositionChange = (axis: 'x' | 'y', value: number) => {
+    const newPosition = { ...logoPosition, [axis]: value };
+    setLogoPosition(newPosition);
+    console.log(`Logo ${axis} position changed to:`, value, 'New position:', newPosition);
   };
 
   return (
@@ -1931,7 +1939,7 @@ const Demo = () => {
       </AnimatePresence>
 
       {/* Logo Position Control Panel */}
-      <div className='fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200'>
+      <div className='fixed top-4 right-4 z-[9999] bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200'>
         <div className='text-xs font-semibold text-gray-700 mb-2 text-center'>Logo Position</div>
         <div className='space-y-2'>
           <div className='flex items-center gap-2'>
@@ -1941,8 +1949,9 @@ const Demo = () => {
               min='-100'
               max='100'
               value={logoPosition.x}
-              onChange={(e) => setLogoPosition(prev => ({ ...prev, x: parseInt(e.target.value) }))}
+              onChange={(e) => handleLogoPositionChange('x', parseInt(e.target.value))}
               className='w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
+              style={{ pointerEvents: 'auto' }}
             />
             <span className='text-xs text-gray-500 w-8 text-right'>{logoPosition.x}px</span>
           </div>
@@ -1953,14 +1962,16 @@ const Demo = () => {
               min='-100'
               max='100'
               value={logoPosition.y}
-              onChange={(e) => setLogoPosition(prev => ({ ...prev, y: parseInt(e.target.value) }))}
+              onChange={(e) => handleLogoPositionChange('y', parseInt(e.target.value))}
               className='w-20 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider'
+              style={{ pointerEvents: 'auto' }}
             />
             <span className='text-xs text-gray-500 w-8 text-right'>{logoPosition.y}px</span>
           </div>
           <button
             onClick={resetLogoPosition}
             className='w-full px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors'
+            style={{ pointerEvents: 'auto' }}
           >
             Reset
           </button>
@@ -1984,7 +1995,8 @@ const Demo = () => {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
               style={{
-                transform: `translate(${logoPosition.x}px, ${logoPosition.y}px)`
+                transform: `translate(${logoPosition.x}px, ${logoPosition.y}px)`,
+                transition: 'transform 0.1s ease-out'
               }}
             >
               <img 
