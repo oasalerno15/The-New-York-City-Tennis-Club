@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from '@vercel/analytics/react';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,10 +18,7 @@ export const metadata: Metadata = {
   description: "Find real-time wait times and court availability across NYC's premier tennis facilities. Never wait for a court again with our innovative platform.",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   icons: {
-    icon: [
-      { url: '/racket.png', type: 'image/png' },
-      { url: '/favicon.ico', type: 'image/x-icon' },
-    ],
+    icon: '/racket.png',
     shortcut: '/racket.png',
     apple: '/racket.png',
   },
@@ -35,7 +33,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" type="image/png" href="/racket.png" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="shortcut icon" href="/racket.png" />
         <link rel="apple-touch-icon" href="/racket.png" />
       </head>
@@ -43,6 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

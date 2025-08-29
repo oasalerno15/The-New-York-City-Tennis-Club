@@ -182,9 +182,191 @@
     max-width: calc(100vw - 2rem);
   }
   
-  /* Better mobile video sizing */
+  /* Hide video on mobile */
   .mobile-video {
-    height: 400px !important;
-    max-height: 60vh;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    pointer-events: none !important;
+  }
+  
+  /* Hide ScrollExpandMedia component on mobile */
+  .scroll-expansion-hero {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    pointer-events: none !important;
+  }
+  
+  /* Mobile only - hide scroll expansion and simplify scrolling */
+  @media (max-width: 768px) {
+    /* Hide scroll expansion components on mobile */
+    .scroll-expansion-hero,
+    [class*="ScrollExpandMedia"] {
+      display: none !important;
+    }
+    
+    /* Smooth mobile scrolling */
+    body {
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      scroll-behavior: smooth !important;
+    }
+    
+    /* Smooth transitions for mobile elements */
+    [class*="md:hidden"] {
+      transition: all 0.3s ease-in-out;
+    }
+    
+    /* Ensure smooth scrolling on mobile */
+    html {
+      scroll-behavior: smooth !important;
+    }
+  }
+  
+  /* Force mobile to show ONLY the background image */
+  html, body {
+    background: url('/sunset.jpg') center center !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+  }
+  
+
+  
+
+  
+  /* Hide any remaining content boxes */
+  main, .main, .container, .wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  
+  /* MOBILE-SPECIFIC LAYOUT - Clean skyline with text, no tennis court */
+  .mobile-hero-section {
+    position: relative !important;
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    color: white !important;
+    z-index: 10 !important;
+    padding: 0 2rem !important;
+    background: url('/sunset.jpg') center center !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+  }
+  
+  .mobile-hero-section .hero-text {
+    font-size: 3rem !important;
+    font-weight: bold !important;
+    margin-bottom: 1.5rem !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7) !important;
+    line-height: 1.2 !important;
+    max-width: 90% !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 15 !important;
+  }
+  
+  .mobile-hero-section .logo-section {
+    position: absolute !important;
+    top: 2rem !important;
+    left: 2rem !important;
+    z-index: 20 !important;
+  }
+  
+  .mobile-hero-section .subtitle {
+    font-size: 1.2rem !important;
+    opacity: 0.9 !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
+    position: absolute !important;
+    top: 60% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 20 !important;
+    max-width: 80% !important;
+  }
+  
+  .mobile-hero-section .scroll-hint {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    opacity: 0.8 !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7) !important;
+    animation: bounce 2s infinite !important;
+    position: absolute !important;
+    bottom: 2rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 20 !important;
+  }
+  
+  .mobile-hero-section button {
+    text-shadow: none !important;
+    min-width: 160px !important;
+    font-size: 1.1rem !important;
+    position: relative !important;
+    z-index: 60 !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    font-weight: 600 !important;
+    padding: 1rem 2rem !important;
+  }
+  
+  .mobile-hero-section .action-buttons {
+    position: absolute !important;
+    top: 70% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 50 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    pointer-events: auto !important;
+  }
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0) !important;
+    }
+    40% {
+      transform: translateY(-10px) !important;
+    }
+    60% {
+      transform: translateY(-5px) !important;
+    }
+  }
+  
+  /* Mobile court status section - white background */
+  .mobile-court-section {
+    background: white !important;
+    min-height: 100vh !important;
+    padding: 2rem 1rem !important;
+    color: #1f2937 !important;
+  }
+  
+  /* Smooth fade transition for mobile */
+  .mobile-fade-transition {
+    transition: opacity 0.8s ease-in-out !important;
+  }
+  
+  .mobile-fade-out {
+    opacity: 0 !important;
   }
 }

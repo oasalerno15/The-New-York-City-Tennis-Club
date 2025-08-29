@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
 import { supabase, WaitTime, NewWaitTime } from '@/lib/supabase';
 
+
 // Interface for court data
 interface CourtData {
   id: number;
@@ -121,6 +122,9 @@ const loadCourtsData = async (): Promise<CourtData[]> => {
     return [];
   }
 };
+
+
+
 
 // Google Maps Component
 const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPermitStatuses }: {
@@ -267,14 +271,21 @@ const QAItem = ({ qa }: { qa: { question: string; answer: string } }) => {
           <h3 className={`text-xl md:text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
             {qa.question}
           </h3>
-          <motion.img
-            src="/racket.png"
-            alt="Tennis racket"
-            className={`w-6 h-6 transition-all duration-300 ${isHovered ? 'filter brightness-0 invert' : 'filter brightness-0'}`}
+          <motion.svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="black"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`w-6 h-6 transition-all duration-300`}
             animate={{ rotate: isHovered ? 180 : 0 }}
             transition={{ duration: 0.3 }}
-            style={{ filter: isHovered ? 'brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(120deg)' : 'brightness(0)' }}
-          />
+          >
+            <path d="m12 5 7 7-7 7"/>
+          </motion.svg>
         </div>
       </div>
 
@@ -377,14 +388,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     'Brian Watkins Courts': null
   });
   const [waitTimesLoading, setWaitTimesLoading] = useState(true);
-
   const [reporting, setReporting] = useState<string | null>(null);
   const [reportSuccess, setReportSuccess] = useState<string | null>(null);
-  const [comments, setComments] = useState({
-    'Hudson River Park Courts': '',
-    'Pier 42': '',
-    'Brian Watkins Courts': ''
-  });
 
   // Refs for form elements
   const hudsonSelectRef = useRef<HTMLSelectElement>(null);
@@ -393,6 +398,43 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const pierCommentRef = useRef<HTMLInputElement>(null);
   const brianSelectRef = useRef<HTMLSelectElement>(null);
   const brianCommentRef = useRef<HTMLInputElement>(null);
+
+
+
+
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Helper function to get default comment based on wait time
+  const getDefaultComment = (waitTime: string) => {
+    if (waitTime.includes('Less than 1 hour')) return 'Quick access, great conditions!';
+    if (waitTime.includes('1-2 hours')) return 'Moderate wait, bring a snack';
+    if (waitTime.includes('2-3 hours')) return 'Long wait, maybe try another time';
+    if (waitTime.includes('More than 3 hours')) return 'Very busy, consider alternatives';
+    return 'Court status updated';
+  };
+
+  // Helper function to determine status color from wait time
+  const getStatusFromWaitTime = (waitTime: string) => {
+    if (waitTime.includes('Less than 1 hour')) return 'green';
+    if (waitTime.includes('1-2 hours')) return 'yellow';
+    if (waitTime.includes('2-3 hours')) return 'orange';
+    if (waitTime.includes('More than 3 hours')) return 'red';
+    return 'gray';
+  };
+
+  // Get status color for display
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'green': return 'bg-green-500';
+      case 'yellow': return 'bg-yellow-500';
+      case 'orange': return 'bg-orange-500';
+      case 'red': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
 
   // Function to format time difference
   const formatTimeDifference = (timestamp: number) => {
@@ -407,20 +449,68 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return `${Math.floor(diffHours / 24)} day${Math.floor(diffHours / 24) !== 1 ? 's' : ''} ago`;
   };
 
-  // State to trigger timestamp updates
-  const [timeUpdate, setTimeUpdate] = useState(0);
+  // Load wait times from Supabase
+  const loadWaitTimes = async () => {
+    try {
+      setWaitTimesLoading(true);
+      const now = new Date();
+      
+      const { data, error } = await supabase
+        .from('wait_times')
+        .select('*')
+        .gte('expires_at', now.toISOString())
+        .order('created_at', { ascending: false });
 
-  // Update timestamps every minute
+      if (error) {
+        console.error('Error loading wait times:', error);
+        return;
+      }
+
+      console.log('Loaded wait times (non-expired):', data);
+
+      // Group by court name and get the most recent for each
+      const courtWaitTimes: { [key: string]: WaitTime | null } = {
+        'Hudson River Park Courts': null,
+        'Pier 42': null,
+        'Brian Watkins Courts': null
+      };
+
+      data?.forEach(waitTime => {
+        if (courtWaitTimes[waitTime.court_name] === null) {
+          courtWaitTimes[waitTime.court_name] = waitTime;
+        }
+      });
+
+      setWaitTimes(courtWaitTimes);
+      console.log('Final court wait times:', courtWaitTimes);
+    } catch (error) {
+      console.error('Error loading wait times:', error);
+    } finally {
+      setWaitTimesLoading(false);
+    }
+  };
+
+  // Load wait times on component mount
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeUpdate(prev => prev + 1);
-    }, 60000); // Update every minute
-
-    return () => clearInterval(interval);
+    loadWaitTimes();
   }, []);
 
+  // Load courts data on component mount
   useEffect(() => {
-    setIsMounted(true);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const courtsData = await loadCourtsData();
+        setCourts(courtsData);
+        console.log('Loaded courts data:', courtsData.length, 'courts');
+      } catch (error) {
+        console.error('Error loading courts data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
   }, []);
 
   // Auto-play video when it comes into view
@@ -466,141 +556,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return () => observer.disconnect();
   }, [isMounted, hasPlayed]);
 
-  // Load courts data and wait times on component mount
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const courtsData = await loadCourtsData();
-      setCourts(courtsData);
-      
-      // Test Supabase connection and load initial wait times
-      try {
-        const { data, error } = await supabase.from('wait_times').select('count').limit(1);
-        if (error) {
-          console.error('Supabase connection error:', error);
-        } else {
-          console.log('Supabase connected successfully!');
-          
-          // Clean up any existing expired wait times first
-          const now = new Date();
-          const { error: cleanupError } = await supabase
-            .from('wait_times')
-            .delete()
-            .lt('expires_at', now.toISOString());
-          
-          if (cleanupError) {
-            console.error('Error cleaning up expired wait times on mount:', cleanupError);
-          } else {
-            console.log('Cleaned up expired wait times on mount');
-          }
-          
-          await loadWaitTimes();
-        }
-      } catch (error) {
-        console.error('Failed to connect to Supabase:', error);
-      }
-      
-      setLoading(false);
-    };
-    
-    loadData();
-  }, []);
 
-  // Load wait times from Supabase
-  const loadWaitTimes = async () => {
-    try {
-      setWaitTimesLoading(true);
-      
-      // Get current time for filtering expired wait times
-      const now = new Date();
-      console.log('Loading wait times, current time:', now.toISOString());
-      
-      const { data, error } = await supabase
-        .from('wait_times')
-        .select('*')
-        .gte('expires_at', now.toISOString()) // Only get non-expired wait times
-        .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading wait times:', error);
-        return;
-      }
 
-      console.log('Loaded wait times (non-expired):', data);
 
-      // Group by court name and get the most recent for each
-      const courtWaitTimes: { [key: string]: WaitTime | null } = {
-        'Hudson River Park Courts': null,
-        'Pier 42': null,
-        'Brian Watkins Courts': null
-      };
 
-      data?.forEach((waitTime) => {
-        if (courtWaitTimes[waitTime.court_name] === null) {
-          courtWaitTimes[waitTime.court_name] = waitTime;
-        }
-      });
-
-      console.log('Final court wait times:', courtWaitTimes);
-      setWaitTimes(courtWaitTimes);
-    } catch (error) {
-      console.error('Error loading wait times:', error);
-    } finally {
-      setWaitTimesLoading(false);
-    }
-  };
-
-  // Set up real-time subscription for wait times
-  useEffect(() => {
-    const subscription = supabase
-      .channel('wait_times_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'wait_times'
-        },
-        async (payload) => {
-          console.log('Real-time update received:', payload);
-          
-          // Reload wait times when data changes
-          await loadWaitTimes();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-      });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Set up periodic cleanup of expired wait times (every 5 minutes)
-  useEffect(() => {
-    const cleanupInterval = setInterval(async () => {
-      try {
-        // Clean up expired wait times from database
-        const now = new Date();
-        const { error } = await supabase
-          .from('wait_times')
-          .delete()
-          .lt('expires_at', now.toISOString());
-        
-        if (error) {
-          console.error('Error cleaning up expired wait times:', error);
-        } else {
-          // Reload wait times to update UI
-          await loadWaitTimes();
-        }
-      } catch (error) {
-        console.error('Error in cleanup routine:', error);
-      }
-    }, 5 * 60 * 1000); // Run every 5 minutes
-
-    return () => clearInterval(cleanupInterval);
-  }, []);
 
   const handleBoroughChange = (borough: string, checked: boolean) => {
     if (checked) {
@@ -625,6 +585,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       setSelectedPermitStatuses(prev => prev.filter(ps => ps !== permitStatus));
     }
   };
+
+
 
   // Handle reporting wait times to Supabase
   const handleReportWaitTime = async (courtName: string, waitTime: string, comment: string = '') => {
@@ -662,14 +624,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       // Reset success state after 3 seconds
       setTimeout(() => setReportSuccess(null), 3000);
       
-      // Clear the comment input
-      if (courtName === 'Hudson River Park Courts' && hudsonCommentRef.current) {
-        hudsonCommentRef.current.value = '';
-      } else if (courtName === 'Pier 42' && pierCommentRef.current) {
-        pierCommentRef.current.value = '';
-      } else if (courtName === 'Brian Watkins Courts' && brianCommentRef.current) {
-        brianCommentRef.current.value = '';
-      }
+      // Reload wait times to update UI
+      await loadWaitTimes();
       
     } catch (error) {
       console.error('Error reporting wait time:', error);
@@ -679,34 +635,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     }
   };
 
-  // Helper function to get default comment based on wait time
-  const getDefaultComment = (waitTime: string) => {
-    if (waitTime.includes('Less than 1 hour')) return 'Quick access, great conditions!';
-    if (waitTime.includes('1-2 hours')) return 'Moderate wait, bring a snack';
-    if (waitTime.includes('2-3 hours')) return 'Long wait, maybe try another time';
-    if (waitTime.includes('More than 3 hours')) return 'Very busy, consider alternatives';
-    return 'Court status updated';
-  };
 
-  // Helper function to determine status color from wait time
-  const getStatusFromWaitTime = (waitTime: string) => {
-    if (waitTime.includes('Less than 1 hour')) return 'green';
-    if (waitTime.includes('1-2 hours')) return 'yellow';
-    if (waitTime.includes('2-3 hours')) return 'orange';
-    if (waitTime.includes('More than 3 hours')) return 'red';
-    return 'gray';
-  };
-
-  // Get status color for display
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'green': return 'bg-green-500';
-      case 'yellow': return 'bg-yellow-500';
-      case 'orange': return 'bg-orange-500';
-      case 'red': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
 
   // Replace with your actual Google Maps API key
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -1492,12 +1421,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
               {/* Big Green Display Cards */}
               <div className="space-y-4">
-                {waitTimesLoading && (
-                  <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B3A2E]"></div>
-                    <p className="mt-2 text-gray-600">Loading wait times...</p>
-                  </div>
-                )}
                 {/* Hudson River Park Courts */}
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
@@ -2019,23 +1942,16 @@ const Demo = () => {
   const [mediaType] = useState('video');
   const currentMedia = sampleMediaContent[mediaType];
   const [showNav, setShowNav] = useState(true);
-  
-  // Header positioning controls
-  const [headerPosition, setHeaderPosition] = useState({ x: 0, y: 55 });
-  const [logoPosition, setLogoPosition] = useState({ x: -50, y: 0 });
 
   useEffect(() => {
     window.scrollTo(0, 0);
-
-    const resetEvent = new Event('resetSection');
-    window.dispatchEvent(resetEvent);
-  }, [mediaType]);
+  }, []);
 
   // Handle scroll to hide/show navigation
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setShowNav(scrollY < 1); // Hide nav immediately when scrolling (changed from 100 to 1)
+      setShowNav(scrollY < 1); // Hide nav immediately when scrolling
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -2044,41 +1960,39 @@ const Demo = () => {
 
   return (
     <div className='min-h-screen overflow-x-hidden'>
-      {/* Header - Disappears on scroll */}
-      <AnimatePresence>
-        {showNav && (
-          <motion.header 
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className='fixed top-0 left-0 right-0 z-50'
-          >
-            <div className='container mx-auto px-4 py-2 md:py-3'>
-              <div className='flex items-center justify-center'>
-                <div className='text-center'>
-                  <h1 
-                    className='text-base md:text-lg lg:text-xl font-semibold text-white text-center drop-shadow-lg leading-tight mobile-header'
-                    style={{ 
-                      transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
-                    }}
-                  >
-                    Check Wait Times • Find a Court
-                  </h1>
-                  <p 
-                    className='text-sm md:text-base text-white/90 text-center drop-shadow-lg leading-tight mt-1'
-                    style={{ 
-                      transform: `translate(${headerPosition.x}px, ${headerPosition.y}px)` 
-                    }}
-                  >
-                    Your free navigator to NYC public tennis
-                  </p>
+
+      {/* Desktop Header - Only visible on desktop */}
+      <div className="hidden md:block">
+        <AnimatePresence>
+          {showNav && (
+            <motion.header 
+              initial={{ y: -100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className='fixed top-0 left-0 right-0 z-50'
+            >
+              <div className='container mx-auto px-4 py-2 md:py-3'>
+                <div className='flex items-center justify-center'>
+                  <div className='text-center'>
+                    <h1 
+                      className='text-base md:text-lg lg:text-xl font-semibold text-white text-center drop-shadow-lg leading-tight'
+                    >
+                      Check Wait Times • Find a Court
+                    </h1>
+                    <p 
+                      className='text-sm md:text-base text-white/90 text-center drop-shadow-lg leading-tight mt-1'
+                    >
+                      Your free navigator to NYC public tennis
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.header>
-        )}
-      </AnimatePresence>
+            </motion.header>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Navigation Bar */}
       <AnimatePresence>
         {showNav && (
@@ -2092,10 +2006,6 @@ const Demo = () => {
             {/* Logo - Positioned at very top left */}
             <div 
               className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
-              style={{
-                transform: `translate(${logoPosition.x}px, ${logoPosition.y}px)`,
-                transition: 'transform 0.1s ease-out'
-              }}
             >
               <img 
                 src='/Untitled design.png' 
@@ -2115,17 +2025,44 @@ const Demo = () => {
         )}
       </AnimatePresence>
 
-      <ScrollExpandMedia
-        mediaType={mediaType as 'video' | 'image'}
-        mediaSrc={currentMedia.src}
-        posterSrc={mediaType === 'video' ? currentMedia.poster : undefined}
-        bgImageSrc={currentMedia.background}
-        title={currentMedia.title}
-        date={currentMedia.date}
-        scrollToExpand={currentMedia.scrollToExpand}
-      >
-        <MediaContent mediaType={mediaType as 'video' | 'image'} />
-      </ScrollExpandMedia>
+      {/* Desktop Version - Full Scroll Expansion */}
+      <div className="hidden md:block">
+        <ScrollExpandMedia
+          mediaType={mediaType as 'video' | 'image'}
+          mediaSrc={currentMedia.src}
+          posterSrc={mediaType === 'video' ? currentMedia.poster : undefined}
+          bgImageSrc={currentMedia.background}
+          title={currentMedia.title}
+          date={currentMedia.date}
+          scrollToExpand={currentMedia.scrollToExpand}
+        >
+          <MediaContent mediaType={mediaType as 'video' | 'image'} />
+        </ScrollExpandMedia>
+      </div>
+
+      {/* Mobile Version - Simple Structure */}
+      <div className="md:hidden">
+        {/* Mobile Hero Section with smooth transition */}
+        <div className="relative min-h-screen bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: "url('/sunset.jpg')" }}>
+          {/* Mobile Header Text */}
+          <div className="flex flex-col items-center justify-center min-h-screen text-white text-center px-4 relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 drop-shadow-lg">
+              Check Wait Times • Find a Court
+            </h1>
+            <p className="text-lg md:text-xl opacity-90 drop-shadow-lg">
+              Your free navigator to NYC public tennis
+            </p>
+          </div>
+          
+          {/* Smooth fade overlay for transition */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
+        </div>
+
+        {/* Content Section with smooth entrance */}
+        <div className="bg-white relative -mt-16 pt-16">
+          <MediaContent mediaType={mediaType as 'video' | 'image'} />
+        </div>
+      </div>
     </div>
   );
 };
