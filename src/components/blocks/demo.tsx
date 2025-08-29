@@ -1325,18 +1325,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="w-2 h-2 bg-red-500 rounded-full live-dot"></div>
                   <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
                 </div>
-                {/* Debug button */}
-                <button 
-                  onClick={async () => {
-                    console.log('=== DEBUG: Current wait times ===');
-                    console.log('State:', waitTimes);
-                    console.log('Current time:', new Date().toISOString());
-                    await loadWaitTimes();
-                  }}
-                  className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-                >
-                  Debug
-                </button>
+
               </div>
 
               {/* Clean, Mobile-Friendly Court Info Cards */}
