@@ -19,4 +19,5 @@ export interface NewWaitTime {
   court_name: string
   wait_time: string
   comment?: string
+  expires_at: string
 }

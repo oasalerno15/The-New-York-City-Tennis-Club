@@ -480,6 +480,20 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           console.error('Supabase connection error:', error);
         } else {
           console.log('Supabase connected successfully!');
+          
+          // Clean up any existing expired wait times first
+          const now = new Date();
+          const { error: cleanupError } = await supabase
+            .from('wait_times')
+            .delete()
+            .lt('expires_at', now.toISOString());
+          
+          if (cleanupError) {
+            console.error('Error cleaning up expired wait times on mount:', cleanupError);
+          } else {
+            console.log('Cleaned up expired wait times on mount');
+          }
+          
           await loadWaitTimes();
         }
       } catch (error) {
@@ -496,15 +510,23 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const loadWaitTimes = async () => {
     try {
       setWaitTimesLoading(true);
+      
+      // Get current time for filtering expired wait times
+      const now = new Date();
+      console.log('Loading wait times, current time:', now.toISOString());
+      
       const { data, error } = await supabase
         .from('wait_times')
         .select('*')
+        .gte('expires_at', now.toISOString()) // Only get non-expired wait times
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error loading wait times:', error);
         return;
       }
+
+      console.log('Loaded wait times (non-expired):', data);
 
       // Group by court name and get the most recent for each
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
@@ -519,6 +541,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
       });
 
+      console.log('Final court wait times:', courtWaitTimes);
       setWaitTimes(courtWaitTimes);
     } catch (error) {
       console.error('Error loading wait times:', error);
@@ -552,6 +575,31 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return () => {
       subscription.unsubscribe();
     };
+  }, []);
+
+  // Set up periodic cleanup of expired wait times (every 5 minutes)
+  useEffect(() => {
+    const cleanupInterval = setInterval(async () => {
+      try {
+        // Clean up expired wait times from database
+        const now = new Date();
+        const { error } = await supabase
+          .from('wait_times')
+          .delete()
+          .lt('expires_at', now.toISOString());
+        
+        if (error) {
+          console.error('Error cleaning up expired wait times:', error);
+        } else {
+          // Reload wait times to update UI
+          await loadWaitTimes();
+        }
+      } catch (error) {
+        console.error('Error in cleanup routine:', error);
+      }
+    }, 5 * 60 * 1000); // Run every 5 minutes
+
+    return () => clearInterval(cleanupInterval);
   }, []);
 
   const handleBoroughChange = (borough: string, checked: boolean) => {
@@ -588,12 +636,18 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     setReporting(courtName);
     
     try {
-      // Create new wait time record
-      const newWaitTime: NewWaitTime = {
+      // Create new wait time record with 2-hour expiration
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // 2 hours from now
+      
+      const newWaitTime: NewWaitTime & { expires_at: string } = {
         court_name: courtName,
         wait_time: waitTime,
-        comment: comment || getDefaultComment(waitTime)
+        comment: comment || getDefaultComment(waitTime),
+        expires_at: expiresAt.toISOString()
       };
+
+      console.log('Creating new wait time:', newWaitTime);
 
       const { error } = await supabase
         .from('wait_times')
@@ -1271,6 +1325,18 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="w-2 h-2 bg-red-500 rounded-full live-dot"></div>
                   <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
                 </div>
+                {/* Debug button */}
+                <button 
+                  onClick={async () => {
+                    console.log('=== DEBUG: Current wait times ===');
+                    console.log('State:', waitTimes);
+                    console.log('Current time:', new Date().toISOString());
+                    await loadWaitTimes();
+                  }}
+                  className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                >
+                  Debug
+                </button>
               </div>
 
               {/* Clean, Mobile-Friendly Court Info Cards */}
