@@ -449,48 +449,28 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return `${Math.floor(diffHours / 24)} day${Math.floor(diffHours / 24) !== 1 ? 's' : ''} ago`;
   };
 
-  // Load wait times from Supabase
+  // Load wait times from Supabase - Only load data that users submit during this session
   const loadWaitTimes = async () => {
     try {
       setWaitTimesLoading(true);
-      const now = new Date();
       
-      const { data, error } = await supabase
-        .from('wait_times')
-        .select('*')
-        .gte('expires_at', now.toISOString())
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading wait times:', error);
-        return;
-      }
-
-      console.log('Loaded wait times (non-expired):', data);
-
-      // Group by court name and get the most recent for each
+      // Don't load any existing data from database - start fresh each time
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
         'Brian Watkins Courts': null
       };
 
-      data?.forEach(waitTime => {
-        if (courtWaitTimes[waitTime.court_name] === null) {
-          courtWaitTimes[waitTime.court_name] = waitTime;
-        }
-      });
-
       setWaitTimes(courtWaitTimes);
-      console.log('Final court wait times:', courtWaitTimes);
+      console.log('Initialized empty wait times for all courts');
     } catch (error) {
-      console.error('Error loading wait times:', error);
+      console.error('Error initializing wait times:', error);
     } finally {
       setWaitTimesLoading(false);
     }
   };
 
-  // Load wait times on component mount
+  // Initialize empty wait times on component mount
   useEffect(() => {
     loadWaitTimes();
   }, []);
@@ -1229,6 +1209,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           className='mb-16 md:mb-24'
         >
           <motion.h2 
+            id="wait-times"
             className='text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-12 md:mb-20 text-gray-800 dark:text-white'
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1504,6 +1485,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         </motion.section>
 
         <motion.h2 
+          id="court-finder"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
@@ -2044,14 +2026,65 @@ const Demo = () => {
       <div className="md:hidden">
         {/* Mobile Hero Section with smooth transition */}
         <div className="relative min-h-screen bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: "url('/sunset.jpg')" }}>
-          {/* Mobile Header Text */}
+          {/* Mobile Action Buttons - Replacing Header Text */}
           <div className="flex flex-col items-center justify-center min-h-screen text-white text-center px-4 relative z-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 drop-shadow-lg">
-              Check Wait Times • Find a Court
-            </h1>
-            <p className="text-lg md:text-xl opacity-90 drop-shadow-lg">
-              Your free navigator to NYC public tennis
-            </p>
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              onClick={() => {
+                console.log('Find a Court button clicked');
+                const targetElement = document.getElementById('court-finder');
+                
+                if (targetElement) {
+                  console.log('Found Court Finder section, scrolling...');
+                  const elementTop = (targetElement as HTMLElement).offsetTop;
+                  const headerOffset = 80; // Account for any fixed elements
+                  const elementPosition = elementTop - headerOffset;
+                  
+                  window.scrollTo({
+                    top: elementPosition,
+                    behavior: 'smooth'
+                  });
+                } else {
+                  console.log('Court Finder section not found');
+                  // Fallback: scroll to a general area
+                  window.scrollTo({ top: 1000, behavior: 'smooth' });
+                }
+              }}
+              className="w-64 md:w-80 bg-[#1B3A2E] text-white py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:bg-[#1B3A2E]/90 hover:scale-105 transition-all duration-300 mb-4"
+            >
+              Find a Court
+            </motion.button>
+            
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              onClick={() => {
+                console.log('Check Wait Times button clicked');
+                const targetElement = document.getElementById('wait-times');
+                
+                if (targetElement) {
+                  console.log('Found Wait Times section, scrolling...');
+                  const elementTop = (targetElement as HTMLElement).offsetTop;
+                  const headerOffset = 80; // Account for any fixed elements
+                  const elementPosition = elementTop - headerOffset;
+                  
+                  window.scrollTo({
+                    top: elementPosition,
+                    behavior: 'smooth'
+                  });
+                } else {
+                  console.log('Wait Times section not found');
+                  // Fallback: scroll to a general area
+                  window.scrollTo({ top: 1500, behavior: 'smooth' });
+                }
+              }}
+              className="w-64 md:w-80 bg-white text-[#1B3A2E] border-2 border-[#1B3A2E] py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:bg-[#1B3A2E] hover:text-white transition-all duration-300"
+            >
+              Check Wait Times
+            </motion.button>
           </div>
           
           {/* Smooth fade overlay for transition */}
