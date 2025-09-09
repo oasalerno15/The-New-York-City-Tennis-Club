@@ -120,15 +120,15 @@
     @apply bg-background text-foreground;
   }
   
-  /* Smooth scrolling for the scroll expansion component */
-  html {
+  /* Smooth scrolling for the scroll expansion component - DISABLED FOR PERFORMANCE */
+  /* html {
     scroll-behavior: smooth;
-  }
+  } */
   
-  /* Prevent body scroll when component is active */
-  body.scroll-locked {
+  /* Prevent body scroll when component is active - DISABLED FOR MOBILE SCROLLING */
+  /* body.scroll-locked {
     overflow: hidden;
-  }
+  } */
   
   /* Ensure proper scaling on all devices */
   img, video {
@@ -212,32 +212,35 @@
       display: none !important;
     }
     
-    /* Smooth mobile scrolling */
+    /* Smooth mobile scrolling - PERFORMANCE OPTIMIZED */
     body {
-      overflow-x: hidden !important;
+      overflow-x: visible !important;
       overflow-y: auto !important;
-      scroll-behavior: smooth !important;
+      /* scroll-behavior: smooth !important; - DISABLED FOR PERFORMANCE */
     }
     
-    /* Smooth transitions for mobile elements */
+    /* Smooth transitions for mobile elements - PERFORMANCE OPTIMIZED */
     [class*="md:hidden"] {
-      transition: all 0.3s ease-in-out;
+      transition: none !important; /* Disabled for performance */
     }
     
     /* Ensure smooth scrolling on mobile */
     html {
-      scroll-behavior: smooth !important;
+      /* scroll-behavior: smooth !important; - DISABLED FOR PERFORMANCE */
     }
   }
   
-  /* Force mobile to show ONLY the background image */
+  /* Force mobile to show ONLY the background image - PERFORMANCE OPTIMIZED */
   html, body {
     background: url('/sunset.jpg') center center !important;
     background-size: cover !important;
-    background-attachment: fixed !important;
+    background-attachment: scroll !important; /* Changed from fixed for performance */
     background-repeat: no-repeat !important;
     min-height: 100vh !important;
-    overflow-x: hidden !important;
+    overflow-x: visible !important;
+    /* Performance optimizations */
+    will-change: auto !important;
+    transform: translateZ(0) !important;
   }
   
 

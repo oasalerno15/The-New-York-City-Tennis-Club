@@ -409,11 +409,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
   // Helper function to get default comment based on wait time
   const getDefaultComment = (waitTime: string) => {
-    if (waitTime.includes('Less than 1 hour')) return 'Quick access, great conditions!';
-    if (waitTime.includes('1-2 hours')) return 'Moderate wait, bring a snack';
-    if (waitTime.includes('2-3 hours')) return 'Long wait, maybe try another time';
-    if (waitTime.includes('More than 3 hours')) return 'Very busy, consider alternatives';
-    return 'Court status updated';
+    // Return empty string so no default comment is generated
+    return '';
   };
 
   // Helper function to determine status color from wait time
@@ -449,30 +446,86 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     return `${Math.floor(diffHours / 24)} day${Math.floor(diffHours / 24) !== 1 ? 's' : ''} ago`;
   };
 
-  // Load wait times from Supabase - Only load data that users submit during this session
+  // Load wait times from Supabase - Load only recent, non-expired data
   const loadWaitTimes = async () => {
     try {
       setWaitTimesLoading(true);
       
-      // Don't load any existing data from database - start fresh each time
+      // Load only non-expired wait times from database
+      const { data, error } = await supabase
+        .from('wait_times')
+        .select('*')
+        .gt('expires_at', new Date().toISOString()) // Only get non-expired records
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading wait times:', error);
+        // Fallback to empty state
+        const courtWaitTimes: { [key: string]: WaitTime | null } = {
+          'Hudson River Park Courts': null,
+          'Pier 42': null,
+          'Brian Watkins Courts': null
+        };
+        setWaitTimes(courtWaitTimes);
+        return;
+      }
+
+      // Group by court name and get the most recent entry for each court
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
         'Brian Watkins Courts': null
       };
 
+      if (data) {
+        data.forEach((waitTime) => {
+          if (courtWaitTimes.hasOwnProperty(waitTime.court_name)) {
+            // Only set if we don't have one yet (since data is ordered by created_at desc)
+            if (!courtWaitTimes[waitTime.court_name]) {
+              courtWaitTimes[waitTime.court_name] = waitTime;
+            }
+          }
+        });
+      }
+
       setWaitTimes(courtWaitTimes);
-      console.log('Initialized empty wait times for all courts');
+      console.log('Loaded recent wait times from database:', courtWaitTimes);
     } catch (error) {
-      console.error('Error initializing wait times:', error);
+      console.error('Error loading wait times:', error);
+      // Fallback to empty state
+      const courtWaitTimes: { [key: string]: WaitTime | null } = {
+        'Hudson River Park Courts': null,
+        'Pier 42': null,
+        'Brian Watkins Courts': null
+      };
+      setWaitTimes(courtWaitTimes);
     } finally {
       setWaitTimesLoading(false);
     }
   };
 
-  // Initialize empty wait times on component mount
+  // Clean up expired wait times from database
+  const cleanupExpiredWaitTimes = async () => {
+    try {
+      const { error } = await supabase
+        .from('wait_times')
+        .delete()
+        .lt('expires_at', new Date().toISOString());
+      
+      if (error) {
+        console.error('Error cleaning up expired wait times:', error);
+      } else {
+        console.log('Cleaned up expired wait times');
+      }
+    } catch (error) {
+      console.error('Error cleaning up expired wait times:', error);
+    }
+  };
+
+  // Initialize wait times on component mount
   useEffect(() => {
     loadWaitTimes();
+    cleanupExpiredWaitTimes(); // Clean up old data
   }, []);
 
   // Load courts data on component mount
@@ -570,6 +623,14 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
   // Handle reporting wait times to Supabase
   const handleReportWaitTime = async (courtName: string, waitTime: string, comment: string = '') => {
+    console.log('=== REPORTING DEBUG START ===');
+    console.log('handleReportWaitTime called with:', { courtName, waitTime, comment });
+    console.log('Supabase client:', supabase);
+    console.log('Environment check:', {
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
+    });
+    
     if (!waitTime || waitTime === 'Select wait time...') {
       alert('Please select a wait time before reporting');
       return;
@@ -578,6 +639,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     setReporting(courtName);
     
     try {
+      // Check if Supabase is properly configured
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
+      }
+
       // Create new wait time record with 2-hour expiration
       const now = new Date();
       const expiresAt = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // 2 hours from now
@@ -591,13 +657,17 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
       console.log('Creating new wait time:', newWaitTime);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('wait_times')
-        .insert(newWaitTime);
+        .insert(newWaitTime)
+        .select();
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
+
+      console.log('Successfully created wait time:', data);
 
       setReportSuccess(courtName);
       
@@ -609,7 +679,17 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       
     } catch (error) {
       console.error('Error reporting wait time:', error);
-      alert('Failed to report wait time. Please try again.');
+      console.log('=== REPORTING DEBUG END ===');
+      
+      // More detailed error message
+      let errorMessage = 'Failed to report wait time. ';
+      if (error instanceof Error) {
+        errorMessage += `Error: ${error.message}`;
+      } else {
+        errorMessage += 'Please check your internet connection and try again.';
+      }
+      
+      alert(errorMessage);
     } finally {
       setReporting(null);
     }
@@ -1235,7 +1315,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   <div className="w-2 h-2 bg-red-500 rounded-full live-dot"></div>
                   <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
                 </div>
-
+                
               </div>
 
               {/* Clean, Mobile-Friendly Court Info Cards */}
@@ -1262,7 +1342,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       </select>
                       <button 
                         onClick={() => {
-                          handleReportWaitTime('Hudson River Park Courts', hudsonSelectRef.current?.value || '', hudsonCommentRef.current?.value);
+                          handleReportWaitTime('Hudson River Park Courts', hudsonSelectRef.current?.value || '', hudsonCommentRef.current?.value || '');
                         }}
                         disabled={reporting === 'Hudson River Park Courts'}
                         className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
@@ -1308,7 +1388,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       </select>
                       <button 
                         onClick={() => {
-                          handleReportWaitTime('Pier 42', pierSelectRef.current?.value || '', pierCommentRef.current?.value);
+                          handleReportWaitTime('Pier 42', pierSelectRef.current?.value || '', pierCommentRef.current?.value || '');
                         }}
                         disabled={reporting === 'Pier 42'}
                         className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
@@ -1354,7 +1434,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       </select>
                       <button 
                         onClick={() => {
-                          handleReportWaitTime('Brian Watkins Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value);
+                          handleReportWaitTime('Brian Watkins Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value || '');
                         }}
                         disabled={reporting === 'Brian Watkins Courts'}
                         className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
@@ -1413,11 +1493,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <>
                         <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].wait_time}</p>
                         <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Hudson River Park Courts'].created_at).getTime())}</p>
-                        {waitTimes['Hudson River Park Courts'].comment ? (
+                        {waitTimes['Hudson River Park Courts'].comment && waitTimes['Hudson River Park Courts'].comment.trim() !== '' ? (
                           <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
-                        ) : (
-                          <p className="text-sm text-gray-400 italic">No comment</p>
-                        )}
+                        ) : null}
                       </>
                     ) : (
                       <>
@@ -1439,11 +1517,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <>
                         <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].wait_time}</p>
                         <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Pier 42'].created_at).getTime())}</p>
-                        {waitTimes['Pier 42'].comment ? (
+                        {waitTimes['Pier 42'].comment && waitTimes['Pier 42'].comment.trim() !== '' ? (
                           <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
-                        ) : (
-                          <p className="text-sm text-gray-400 italic">No comment</p>
-                        )}
+                        ) : null}
                       </>
                     ) : (
                       <>
@@ -1465,11 +1541,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       <>
                         <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].wait_time}</p>
                         <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Brian Watkins Courts'].created_at).getTime())}</p>
-                        {waitTimes['Brian Watkins Courts'].comment ? (
+                        {waitTimes['Brian Watkins Courts'].comment && waitTimes['Brian Watkins Courts'].comment.trim() !== '' ? (
                           <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
-                        ) : (
-                          <p className="text-sm text-gray-400 italic">No comment</p>
-                        )}
+                        ) : null}
                       </>
                     ) : (
                       <>
@@ -1893,19 +1967,25 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className='relative'
               >
-                {/* Tennis Video in the center */}
+                {/* Tennis Video in the center - PERFORMANCE OPTIMIZED */}
                 <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] relative mobile-video'>
                   <video 
                     ref={videoRef}
                     className='w-full h-full object-contain rounded-lg'
                     muted
                     playsInline
+                    preload="none"
+                    poster="/sunset.jpg"
                     onEnded={(e) => {
                       // Stop the video when it ends and don't replay
                       e.currentTarget.pause();
                       setHasPlayed(true);
                     }}
-                    style={{ outline: 'none' }}
+                    style={{ 
+                      outline: 'none',
+                      willChange: 'auto',
+                      transform: 'translateZ(0)'
+                    }}
                   >
                     <source src="/8_22_2025_14_53_32_contentcore.xyz.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
@@ -2026,65 +2106,36 @@ const Demo = () => {
       <div className="md:hidden">
         {/* Mobile Hero Section with smooth transition */}
         <div className="relative min-h-screen bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: "url('/sunset.jpg')" }}>
-          {/* Mobile Action Buttons - Replacing Header Text */}
+          {/* Mobile Text Content */}
           <div className="flex flex-col items-center justify-center min-h-screen text-white text-center px-4 relative z-10">
-            <motion.button
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              onClick={() => {
-                console.log('Find a Court button clicked');
-                const targetElement = document.getElementById('court-finder');
-                
-                if (targetElement) {
-                  console.log('Found Court Finder section, scrolling...');
-                  const elementTop = (targetElement as HTMLElement).offsetTop;
-                  const headerOffset = 80; // Account for any fixed elements
-                  const elementPosition = elementTop - headerOffset;
-                  
-                  window.scrollTo({
-                    top: elementPosition,
-                    behavior: 'smooth'
-                  });
-                } else {
-                  console.log('Court Finder section not found');
-                  // Fallback: scroll to a general area
-                  window.scrollTo({ top: 1000, behavior: 'smooth' });
-                }
-              }}
-              className="w-64 md:w-80 bg-[#1B3A2E] text-white py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:bg-[#1B3A2E]/90 hover:scale-105 transition-all duration-300 mb-4"
+              className="space-y-4"
             >
-              Find a Court
-            </motion.button>
-            
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              onClick={() => {
-                console.log('Check Wait Times button clicked');
-                const targetElement = document.getElementById('wait-times');
-                
-                if (targetElement) {
-                  console.log('Found Wait Times section, scrolling...');
-                  const elementTop = (targetElement as HTMLElement).offsetTop;
-                  const headerOffset = 80; // Account for any fixed elements
-                  const elementPosition = elementTop - headerOffset;
-                  
-                  window.scrollTo({
-                    top: elementPosition,
-                    behavior: 'smooth'
-                  });
-                } else {
-                  console.log('Wait Times section not found');
-                  // Fallback: scroll to a general area
-                  window.scrollTo({ top: 1500, behavior: 'smooth' });
-                }
-              }}
-              className="w-64 md:w-80 bg-white text-[#1B3A2E] border-2 border-[#1B3A2E] py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:bg-[#1B3A2E] hover:text-white transition-all duration-300"
-            >
-              Check Wait Times
-            </motion.button>
+              <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">
+                Check Wait Times • Find a Court
+              </h1>
+              <p className="text-lg md:text-xl text-white/90 drop-shadow-lg">
+                Your free navigator to NYC public tennis
+              </p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="flex flex-col items-center space-y-2 mt-8"
+              >
+                <span className="text-lg font-medium text-white drop-shadow-lg">Scroll down</span>
+                <motion.div
+                  animate={{ y: [0, 8, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-white text-2xl"
+                >
+                  ↓
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </div>
           
           {/* Smooth fade overlay for transition */}
