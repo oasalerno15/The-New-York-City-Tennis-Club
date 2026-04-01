@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NYC Tennis Courts - Live Wait Times",
   description: "Find real-time wait times and court availability across NYC's premier tennis facilities. Never wait for a court again with our innovative platform.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
   icons: {
     icon: '/racket.png',
     shortcut: '/racket.png',

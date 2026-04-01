@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Wrapper, Status } from '@googlemaps/react-wrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
+import { MobileAppShell } from '@/components/mobile/MobileAppShell';
 import { supabase, WaitTime, NewWaitTime } from '@/lib/supabase';
 
 
@@ -450,7 +451,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const loadWaitTimes = async () => {
     try {
       setWaitTimesLoading(true);
-      
+      if (!supabase) {
+        setWaitTimes({ 'Hudson River Park Courts': null, 'Pier 42': null, 'Brian Watkins Courts': null });
+        return;
+      }
       // Load only non-expired wait times from database
       const { data, error } = await supabase
         .from('wait_times')
@@ -459,7 +463,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading wait times:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Supabase not configured or error loading wait times:', error.message || error);
+        }
         // Fallback to empty state
         const courtWaitTimes: { [key: string]: WaitTime | null } = {
           'Hudson River Park Courts': null,
@@ -491,7 +497,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       setWaitTimes(courtWaitTimes);
       console.log('Loaded recent wait times from database:', courtWaitTimes);
     } catch (error) {
-      console.error('Error loading wait times:', error);
+      if (process.env.NODE_ENV === 'development' && supabase) {
+        console.warn('Error loading wait times:', error instanceof Error ? error.message : 'Unknown error');
+      }
       // Fallback to empty state
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
@@ -506,19 +514,17 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
   // Clean up expired wait times from database
   const cleanupExpiredWaitTimes = async () => {
+    if (!supabase) return;
     try {
       const { error } = await supabase
         .from('wait_times')
         .delete()
         .lt('expires_at', new Date().toISOString());
-      
-      if (error) {
-        console.error('Error cleaning up expired wait times:', error);
-      } else {
-        console.log('Cleaned up expired wait times');
+      if (error && process.env.NODE_ENV === 'development') {
+        console.warn('Cleanup expired wait times:', error.message || error);
       }
-    } catch (error) {
-      console.error('Error cleaning up expired wait times:', error);
+    } catch {
+      // Silently ignore cleanup errors (e.g. when Supabase not configured)
     }
   };
 
@@ -2023,8 +2029,8 @@ const Demo = () => {
   return (
     <div className='min-h-screen overflow-x-hidden'>
 
-      {/* Desktop Header - Only visible on desktop */}
-      <div className="hidden md:block">
+      {/* Desktop Header - Only visible on desktop (lg = 1024px+) */}
+      <div className="hidden lg:block">
         <AnimatePresence>
           {showNav && (
             <motion.header 
@@ -2055,16 +2061,17 @@ const Demo = () => {
         </AnimatePresence>
       </div>
 
-      {/* Navigation Bar */}
-      <AnimatePresence>
-        {showNav && (
-          <motion.nav 
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className='fixed top-0 left-0 right-0 z-50'
-          >
+      {/* Navigation Bar - Desktop only (MobileAppShell has its own header) */}
+      <div className="hidden lg:block">
+        <AnimatePresence>
+          {showNav && (
+            <motion.nav 
+              initial={{ y: -100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className='fixed top-0 left-0 right-0 z-50'
+            >
             {/* Logo - Positioned at very top left */}
             <div 
               className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
@@ -2086,9 +2093,10 @@ const Demo = () => {
           </motion.nav>
         )}
       </AnimatePresence>
+      </div>
 
       {/* Desktop Version - Full Scroll Expansion */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <ScrollExpandMedia
           mediaType={mediaType as 'video' | 'image'}
           mediaSrc={currentMedia.src}
@@ -2102,50 +2110,9 @@ const Demo = () => {
         </ScrollExpandMedia>
       </div>
 
-      {/* Mobile Version - Simple Structure */}
-      <div className="md:hidden">
-        {/* Mobile Hero Section with smooth transition */}
-        <div className="relative min-h-screen bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: "url('/sunset.jpg')" }}>
-          {/* Mobile Text Content */}
-          <div className="flex flex-col items-center justify-center min-h-screen text-white text-center px-4 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-4"
-            >
-              <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">
-                Check Wait Times • Find a Court
-              </h1>
-              <p className="text-lg md:text-xl text-white/90 drop-shadow-lg">
-                Your free navigator to NYC public tennis
-              </p>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                className="flex flex-col items-center space-y-2 mt-8"
-              >
-                <span className="text-lg font-medium text-white drop-shadow-lg">Scroll down</span>
-                <motion.div
-                  animate={{ y: [0, 8, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-white text-2xl"
-                >
-                  ↓
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          </div>
-          
-          {/* Smooth fade overlay for transition */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
-        </div>
-
-        {/* Content Section with smooth entrance */}
-        <div className="bg-white relative -mt-16 pt-16">
-          <MediaContent mediaType={mediaType as 'video' | 'image'} />
-        </div>
+      {/* Mobile Version - App Shell with Tab Navigation (shows when viewport < 1024px) */}
+      <div className="lg:hidden bg-white min-h-screen min-h-dvh">
+        <MobileAppShell />
       </div>
     </div>
   );

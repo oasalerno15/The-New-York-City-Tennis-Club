@@ -231,16 +231,24 @@
   }
   
   /* Force mobile to show ONLY the background image - PERFORMANCE OPTIMIZED */
+  /* Note: When MobileAppShell is shown (app template), it provides its own white background */
   html, body {
     background: url('/sunset.jpg') center center !important;
     background-size: cover !important;
     background-attachment: scroll !important; /* Changed from fixed for performance */
     background-repeat: no-repeat !important;
     min-height: 100vh !important;
+    min-height: 100dvh !important;
     overflow-x: visible !important;
     /* Performance optimizations */
     will-change: auto !important;
     transform: translateZ(0) !important;
+  }
+  
+  /* Mobile app shell - ensure solid background and safe areas */
+  .mobile-app-shell {
+    background: white !important;
+    min-height: 100dvh !important;
   }
   
 
