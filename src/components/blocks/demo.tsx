@@ -2024,12 +2024,12 @@ const Demo = () => {
             >
             {/* Logo - Positioned at very top left */}
             <div 
-              className='absolute top-1 left-0 md:left-2 z-60 md:-top-40 lg:-top-48 xl:-top-56 mobile-logo'
+              className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
             >
               <img 
                 src='/logo.png' 
                 alt='NYC Tennis Club Logo' 
-                className='h-72 w-auto sm:h-80 md:h-[32rem] lg:h-[44rem] xl:h-[52rem] 2xl:h-[56rem] max-h-[92vh] max-w-[min(95vw,56rem)] object-contain object-left drop-shadow-lg'
+                className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
                 style={{ background: 'transparent' }}
               />
             </div>
