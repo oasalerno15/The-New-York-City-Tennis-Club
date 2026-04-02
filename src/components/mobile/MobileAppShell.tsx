@@ -91,10 +91,10 @@ export function MobileAppShell() {
               <Image
                 src="/logo.png"
                 alt="NYC Tennis Club"
-                width={320}
-                height={320}
+                width={640}
+                height={640}
                 priority
-                className="h-36 w-auto max-h-[28vh] max-w-[min(100%,280px)] object-contain object-center drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)]"
+                className="h-[min(52vh,22rem)] w-auto max-h-[58vh] min-h-[12rem] max-w-[min(96vw,28rem)] object-contain object-center drop-shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
               />
             </div>
             <h1 className="text-3xl font-bold leading-tight text-balance sm:text-4xl">
