@@ -2027,7 +2027,7 @@ const Demo = () => {
               className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
             >
               <img 
-                src='/Untitled design.png' 
+                src='/logo.png' 
                 alt='NYC Tennis Club Logo' 
                 className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
                 style={{ background: 'transparent' }}
