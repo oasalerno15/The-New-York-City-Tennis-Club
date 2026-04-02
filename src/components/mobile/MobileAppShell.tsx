@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MobileTabBar, type MobileTab } from './MobileTabBar';
 import { WaitTimesSection } from '@/components/blocks/WaitTimesSection';
@@ -84,11 +85,18 @@ export function MobileAppShell() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative z-10 w-full max-w-md space-y-5"
+            className="relative z-10 w-full max-w-md space-y-6"
           >
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/70">
-              NYC public tennis
-            </p>
+            <div className="flex justify-center px-2">
+              <Image
+                src="/logo.png"
+                alt="NYC Tennis Club"
+                width={320}
+                height={320}
+                priority
+                className="h-36 w-auto max-h-[28vh] max-w-[min(100%,280px)] object-contain object-center drop-shadow-[0_8px_28px_rgba(0,0,0,0.35)]"
+              />
+            </div>
             <h1 className="text-3xl font-bold leading-tight text-balance sm:text-4xl">
               Live wait times, real courts
             </h1>
