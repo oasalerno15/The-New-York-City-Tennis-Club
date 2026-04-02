@@ -300,10 +300,8 @@ const ScrollExpandMedia = ({
                       <div className='text-center'>
                         <GooeyText
                           texts={[
-                            "Find Your Court.",
-                            "Beat the Wait.",
-                            "For players.",
-                            "Powered by players."
+                            "Powered by Players",
+                            "for players",
                           ]}
                           morphTime={0.5}
                           cooldownTime={1.0}
