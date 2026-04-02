@@ -50,8 +50,7 @@ const loadCourtsData = async (): Promise<CourtData[]> => {
       } else currentField += '\n';
     }
     return courts;
-  } catch (error) {
-    console.error('Error loading courts data:', error);
+  } catch {
     return [];
   }
 };

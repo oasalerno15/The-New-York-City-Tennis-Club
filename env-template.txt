@@ -1,6 +1,8 @@
-# Supabase Configuration
-# Get these from your Supabase project: Settings → API
-# Copy this to .env.local and fill in your actual values
+# Copy to .env.local and fill in. Do not commit .env.local.
 
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url_here
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+# Optional — server-only; not used by the browser bundle unless you add API routes
+SUPABASE_SERVICE_ROLE_KEY=

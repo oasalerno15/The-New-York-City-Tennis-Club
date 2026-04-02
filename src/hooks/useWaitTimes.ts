@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, type WaitTime } from '@/lib/supabase';
+import { supabase, formatSupabaseError, type WaitTime } from '@/lib/supabase';
+import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
+
+const BRIAN_WATKINS_KEY = 'Brian Watkins Tennis Courts';
 
 export function useWaitTimes() {
   const [waitTimes, setWaitTimes] = useState<{ [key: string]: WaitTime | null }>({
     'Hudson River Park Courts': null,
     'Pier 42': null,
-    'Brian Watkins Courts': null,
+    [BRIAN_WATKINS_KEY]: null,
   });
   const [loading, setLoading] = useState(true);
   const [reporting, setReporting] = useState<string | null>(null);
@@ -51,7 +54,11 @@ export function useWaitTimes() {
     try {
       setLoading(true);
       if (!supabase) {
-        setWaitTimes({ 'Hudson River Park Courts': null, 'Pier 42': null, 'Brian Watkins Courts': null });
+        setWaitTimes({
+          'Hudson River Park Courts': null,
+          'Pier 42': null,
+          [BRIAN_WATKINS_KEY]: null,
+        });
         return;
       }
       const { data, error } = await supabase
@@ -64,7 +71,7 @@ export function useWaitTimes() {
         const courtWaitTimes: { [key: string]: WaitTime | null } = {
           'Hudson River Park Courts': null,
           'Pier 42': null,
-          'Brian Watkins Courts': null,
+          [BRIAN_WATKINS_KEY]: null,
         };
         setWaitTimes(courtWaitTimes);
         return;
@@ -73,12 +80,13 @@ export function useWaitTimes() {
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
-        'Brian Watkins Courts': null,
+        [BRIAN_WATKINS_KEY]: null,
       };
 
       data?.forEach((wt) => {
-        if (courtWaitTimes.hasOwnProperty(wt.court_name) && !courtWaitTimes[wt.court_name]) {
-          courtWaitTimes[wt.court_name] = wt;
+        const key = normalizeCourtNameFromDb(wt.court_name);
+        if (courtWaitTimes.hasOwnProperty(key) && !courtWaitTimes[key]) {
+          courtWaitTimes[key] = wt;
         }
       });
 
@@ -87,7 +95,7 @@ export function useWaitTimes() {
       setWaitTimes({
         'Hudson River Park Courts': null,
         'Pier 42': null,
-        'Brian Watkins Courts': null,
+        [BRIAN_WATKINS_KEY]: null,
       });
     } finally {
       setLoading(false);
@@ -123,11 +131,7 @@ export function useWaitTimes() {
       await loadWaitTimes();
     } catch (error) {
       console.error('Error reporting wait time:', error);
-      alert(
-        error instanceof Error
-          ? `Failed: ${error.message}`
-          : 'Failed to report. Check your connection.'
-      );
+      alert(`Failed to report: ${formatSupabaseError(error)}`);
     } finally {
       setReporting(null);
     }

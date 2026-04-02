@@ -5,7 +5,8 @@ import { Wrapper, Status } from '@googlemaps/react-wrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
 import { MobileAppShell } from '@/components/mobile/MobileAppShell';
-import { supabase, WaitTime, NewWaitTime } from '@/lib/supabase';
+import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supabase';
+import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 
 
 // Interface for court data
@@ -36,10 +37,7 @@ const loadCourtsData = async (): Promise<CourtData[]> => {
     let currentRow: string[] = [];
     let currentField = '';
     let inQuotes = false;
-    let rowCount = 0;
-    let processedRows = 0;
-    let validCourts = 0;
-    
+
     // Skip header row
     let startParsing = false;
     
@@ -70,12 +68,9 @@ const loadCourtsData = async (): Promise<CourtData[]> => {
       // If we're not in quotes, this line ends a record
       if (!inQuotes) {
         currentRow.push(currentField.trim());
-        rowCount++;
-        
+
         // Process the complete row if it has enough fields
         if (currentRow.length >= 11) {
-          processedRows++;
-          
           const court: CourtData = {
             id: courts.length + 1,
             name: currentRow[0] || '',
@@ -91,15 +86,11 @@ const loadCourtsData = async (): Promise<CourtData[]> => {
             lng: parseFloat(currentRow[10]) || 0,
           };
           
-          // Debug logging for invalid courts
           if (court.lat === 0 || court.lng === 0 || !court.name || court.name.length === 0) {
-            console.log(`Skipping court: ${court.name || 'No name'} - lat: ${court.lat}, lng: ${court.lng}`);
+            // skip invalid row
           } else {
             courts.push(court);
-            validCourts++;
           }
-        } else {
-          console.log(`Row ${rowCount} has insufficient fields (${currentRow.length}):`, currentRow);
         }
         
         // Reset for next row
@@ -110,13 +101,7 @@ const loadCourtsData = async (): Promise<CourtData[]> => {
         currentField += '\n';
       }
     }
-    
-    console.log(`CSV Processing Summary:`);
-    console.log(`- Total rows processed: ${rowCount}`);
-    console.log(`- Rows with enough fields: ${processedRows}`);
-    console.log(`- Valid courts loaded: ${validCourts}`);
-    console.log(`- Expected: 57 courts`);
-    
+
     return courts;
   } catch (error) {
     console.error('Error loading courts data:', error);
@@ -386,7 +371,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const [waitTimes, setWaitTimes] = useState<{ [key: string]: WaitTime | null }>({
     'Hudson River Park Courts': null,
     'Pier 42': null,
-    'Brian Watkins Courts': null
+    'Brian Watkins Tennis Courts': null
   });
   const [waitTimesLoading, setWaitTimesLoading] = useState(true);
   const [reporting, setReporting] = useState<string | null>(null);
@@ -452,7 +437,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     try {
       setWaitTimesLoading(true);
       if (!supabase) {
-        setWaitTimes({ 'Hudson River Park Courts': null, 'Pier 42': null, 'Brian Watkins Courts': null });
+        setWaitTimes({ 'Hudson River Park Courts': null, 'Pier 42': null, 'Brian Watkins Tennis Courts': null });
         return;
       }
       // Load only non-expired wait times from database
@@ -470,7 +455,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         const courtWaitTimes: { [key: string]: WaitTime | null } = {
           'Hudson River Park Courts': null,
           'Pier 42': null,
-          'Brian Watkins Courts': null
+          'Brian Watkins Tennis Courts': null
         };
         setWaitTimes(courtWaitTimes);
         return;
@@ -480,22 +465,19 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
-        'Brian Watkins Courts': null
+        'Brian Watkins Tennis Courts': null
       };
 
       if (data) {
-        data.forEach((waitTime) => {
-          if (courtWaitTimes.hasOwnProperty(waitTime.court_name)) {
-            // Only set if we don't have one yet (since data is ordered by created_at desc)
-            if (!courtWaitTimes[waitTime.court_name]) {
-              courtWaitTimes[waitTime.court_name] = waitTime;
-            }
+        data.forEach((row) => {
+          const key = normalizeCourtNameFromDb(row.court_name);
+          if (courtWaitTimes.hasOwnProperty(key) && !courtWaitTimes[key]) {
+            courtWaitTimes[key] = row;
           }
         });
       }
 
       setWaitTimes(courtWaitTimes);
-      console.log('Loaded recent wait times from database:', courtWaitTimes);
     } catch (error) {
       if (process.env.NODE_ENV === 'development' && supabase) {
         console.warn('Error loading wait times:', error instanceof Error ? error.message : 'Unknown error');
@@ -504,7 +486,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
-        'Brian Watkins Courts': null
+        'Brian Watkins Tennis Courts': null
       };
       setWaitTimes(courtWaitTimes);
     } finally {
@@ -541,7 +523,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         setLoading(true);
         const courtsData = await loadCourtsData();
         setCourts(courtsData);
-        console.log('Loaded courts data:', courtsData.length, 'courts');
       } catch (error) {
         console.error('Error loading courts data:', error);
       } finally {
@@ -565,12 +546,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         // Try to play immediately
         await video.play();
         setHasPlayed(true);
-        console.log('Video autoplay successful');
-      } catch (error) {
-        console.log('Autoplay failed, user interaction required:', error);
+      } catch {
         // On mobile, we might need user interaction
         const playOnInteraction = () => {
-          video.play().catch((e) => console.log('Play on interaction failed:', e));
+          video.play().catch(() => {});
           document.removeEventListener('touchstart', playOnInteraction);
           document.removeEventListener('click', playOnInteraction);
         };
@@ -583,7 +562,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed) {
-            console.log('Video in view, attempting to play');
             playVideo();
           }
         });
@@ -629,14 +607,6 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
   // Handle reporting wait times to Supabase
   const handleReportWaitTime = async (courtName: string, waitTime: string, comment: string = '') => {
-    console.log('=== REPORTING DEBUG START ===');
-    console.log('handleReportWaitTime called with:', { courtName, waitTime, comment });
-    console.log('Supabase client:', supabase);
-    console.log('Environment check:', {
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
-    });
-    
     if (!waitTime || waitTime === 'Select wait time...') {
       alert('Please select a wait time before reporting');
       return;
@@ -661,19 +631,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         expires_at: expiresAt.toISOString()
       };
 
-      console.log('Creating new wait time:', newWaitTime);
+      const { error } = await supabase.from('wait_times').insert(newWaitTime).select();
 
-      const { data, error } = await supabase
-        .from('wait_times')
-        .insert(newWaitTime)
-        .select();
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-
-      console.log('Successfully created wait time:', data);
+      if (error) throw error;
 
       setReportSuccess(courtName);
       
@@ -685,17 +645,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       
     } catch (error) {
       console.error('Error reporting wait time:', error);
-      console.log('=== REPORTING DEBUG END ===');
-      
-      // More detailed error message
-      let errorMessage = 'Failed to report wait time. ';
-      if (error instanceof Error) {
-        errorMessage += `Error: ${error.message}`;
-      } else {
-        errorMessage += 'Please check your internet connection and try again.';
-      }
-      
-      alert(errorMessage);
+      alert(`Failed to report wait time. ${formatSupabaseError(error)}`);
     } finally {
       setReporting(null);
     }
@@ -1418,18 +1368,18 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   </div>
                 </div>
                 
-                {/* Brian Watkins Courts */}
+                {/* Brian Watkins Tennis Courts */}
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Courts</h4>
-                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Tennis Courts</h4>
+                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
                         className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
-                        defaultValue={waitTimes['Brian Watkins Courts']?.wait_time || "Select wait time..."}
+                        defaultValue={waitTimes['Brian Watkins Tennis Courts']?.wait_time || "Select wait time..."}
                         ref={brianSelectRef}
                       >
                         <option value="Select wait time...">Select wait time...</option>
@@ -1440,19 +1390,19 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       </select>
                       <button 
                         onClick={() => {
-                          handleReportWaitTime('Brian Watkins Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value || '');
+                          handleReportWaitTime('Brian Watkins Tennis Courts', brianSelectRef.current?.value || '', brianCommentRef.current?.value || '');
                         }}
-                        disabled={reporting === 'Brian Watkins Courts'}
+                        disabled={reporting === 'Brian Watkins Tennis Courts'}
                         className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
-                          reporting === 'Brian Watkins Courts' 
+                          reporting === 'Brian Watkins Tennis Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
-                            : reportSuccess === 'Brian Watkins Courts'
+                            : reportSuccess === 'Brian Watkins Tennis Courts'
                             ? 'bg-green-600 text-white scale-105'
                             : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
                         }`}
                       >
-                        {reporting === 'Brian Watkins Courts' ? 'Reporting...' : 
-                         reportSuccess === 'Brian Watkins Courts' ? '✓ Reported!' : 'Report'}
+                        {reporting === 'Brian Watkins Tennis Courts' ? 'Reporting...' : 
+                         reportSuccess === 'Brian Watkins Tennis Courts' ? '✓ Reported!' : 'Report'}
                       </button>
                     </div>
                     <input 
@@ -1536,19 +1486,19 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                   </div>
                 </div>
                 
-                {/* Brian Watkins Courts */}
+                {/* Brian Watkins Tennis Courts */}
                 <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Courts</h4>
-                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
+                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Tennis Courts</h4>
+                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
-                    {waitTimes['Brian Watkins Courts'] ? (
+                    {waitTimes['Brian Watkins Tennis Courts'] ? (
                       <>
-                        <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Courts'].wait_time}</p>
-                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Brian Watkins Courts'].created_at).getTime())}</p>
-                        {waitTimes['Brian Watkins Courts'].comment && waitTimes['Brian Watkins Courts'].comment.trim() !== '' ? (
-                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Courts'].comment}&rdquo;</p>
+                        <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Tennis Courts'].wait_time}</p>
+                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Brian Watkins Tennis Courts'].created_at).getTime())}</p>
+                        {waitTimes['Brian Watkins Tennis Courts'].comment && waitTimes['Brian Watkins Tennis Courts'].comment.trim() !== '' ? (
+                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Tennis Courts'].comment}&rdquo;</p>
                         ) : null}
                       </>
                     ) : (

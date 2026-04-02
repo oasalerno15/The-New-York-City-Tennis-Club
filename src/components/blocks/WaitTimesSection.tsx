@@ -14,7 +14,7 @@ interface WaitTimesSectionProps {
   reportSuccess: string | null;
 }
 
-const COURT_NAMES = ['Hudson River Park Courts', 'Pier 42', 'Brian Watkins Courts'] as const;
+const COURT_NAMES = ['Hudson River Park Courts', 'Pier 42', 'Brian Watkins Tennis Courts'] as const;
 
 export function WaitTimesSection({
   waitTimes,
@@ -35,7 +35,7 @@ export function WaitTimesSection({
   const refs = {
     'Hudson River Park Courts': { select: hudsonSelectRef, comment: hudsonCommentRef },
     'Pier 42': { select: pierSelectRef, comment: pierCommentRef },
-    'Brian Watkins Courts': { select: brianSelectRef, comment: brianCommentRef },
+    'Brian Watkins Tennis Courts': { select: brianSelectRef, comment: brianCommentRef },
   };
 
   return (
