@@ -14,7 +14,12 @@ interface WaitTimesSectionProps {
   reportSuccess: string | null;
 }
 
-const COURT_NAMES = ['Hudson River Park Courts', 'Pier 42', 'Brian Watkins Tennis Courts'] as const;
+const COURT_NAMES = [
+  'Hudson River Park Courts',
+  'Pier 42',
+  'Brian Watkins Tennis Courts',
+  'South Oxford Park Tennis Courts',
+] as const;
 
 export function WaitTimesSection({
   waitTimes,
@@ -31,11 +36,14 @@ export function WaitTimesSection({
   const pierCommentRef = useRef<HTMLInputElement>(null);
   const brianSelectRef = useRef<HTMLSelectElement>(null);
   const brianCommentRef = useRef<HTMLInputElement>(null);
+  const southOxfordSelectRef = useRef<HTMLSelectElement>(null);
+  const southOxfordCommentRef = useRef<HTMLInputElement>(null);
 
   const refs = {
     'Hudson River Park Courts': { select: hudsonSelectRef, comment: hudsonCommentRef },
     'Pier 42': { select: pierSelectRef, comment: pierCommentRef },
     'Brian Watkins Tennis Courts': { select: brianSelectRef, comment: brianCommentRef },
+    'South Oxford Park Tennis Courts': { select: southOxfordSelectRef, comment: southOxfordCommentRef },
   };
 
   return (
@@ -62,7 +70,7 @@ export function WaitTimesSection({
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        NYC Courts-Live Status
+        SmartCourt NYC — Live Status
       </motion.h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16">
@@ -87,10 +95,10 @@ export function WaitTimesSection({
             {COURT_NAMES.map((courtName) => (
               <div
                 key={courtName}
-                className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300 min-h-[44px]"
+                className="bg-[#FFFDD0] border-2 border-[#2D5A27] rounded-lg p-4 hover:shadow-lg transition-all duration-300 min-h-[44px]"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-lg font-semibold text-[#1B3A2E]">{courtName}</h4>
+                  <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
                   <div
                     className={`w-3 h-3 min-w-[12px] min-h-[12px] ${
                       waitTimes[courtName]
@@ -102,7 +110,7 @@ export function WaitTimesSection({
                 <div className="space-y-3">
                   <div className="flex gap-2 flex-wrap">
                     <select
-                      className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20 min-h-[44px]"
+                      className="flex-1 min-w-0 px-2 py-2 border-2 border-[#2D5A27] rounded-lg bg-[#FFFDD0] text-sm text-[#1A1A1A] focus:outline-none focus:border-[#2D5A27] focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20 min-h-[44px]"
                       defaultValue={waitTimes[courtName]?.wait_time || 'Select wait time...'}
                       ref={refs[courtName].select}
                     >
@@ -125,8 +133,8 @@ export function WaitTimesSection({
                         reporting === courtName
                           ? 'bg-gray-400 cursor-not-allowed'
                           : reportSuccess === courtName
-                            ? 'bg-green-600 text-white scale-105'
-                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                            ? 'bg-[#2D5A27] text-[#FFFDD0] scale-105'
+                            : 'bg-[#2D5A27] text-[#FFFDD0] hover:bg-[#24481f] hover:scale-105'
                       }`}
                     >
                       {reporting === courtName
@@ -139,7 +147,7 @@ export function WaitTimesSection({
                   <input
                     type="text"
                     placeholder="Leave a comment about the wait time..."
-                    className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20 min-h-[44px]"
+                    className="w-full px-3 py-2 border-2 border-[#2D5A27] rounded-lg bg-[#FFFDD0] text-sm text-[#1A1A1A] focus:outline-none focus:border-[#2D5A27] focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20 min-h-[44px]"
                     ref={refs[courtName].comment}
                   />
                 </div>
@@ -169,10 +177,10 @@ export function WaitTimesSection({
             {COURT_NAMES.map((courtName) => (
               <div
                 key={courtName}
-                className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300"
+                className="bg-[#FFFDD0] border-2 border-[#2D5A27] rounded-lg p-4 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-lg font-semibold text-[#1B3A2E]">{courtName}</h4>
+                  <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
                   <div
                     className={`w-3 h-3 ${
                       waitTimes[courtName]

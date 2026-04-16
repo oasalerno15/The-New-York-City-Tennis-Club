@@ -84,7 +84,7 @@ const MapComponent = ({
   useEffect(() => {
     if (!map) return;
     markers.forEach((marker) => marker.setMap(null));
-    const color = '#1B3A2E';
+    const color = '#2D5A27';
     const iconUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
         <circle cx="15" cy="15" r="12" fill="${color}" stroke="white" stroke-width="2"/>
@@ -327,8 +327,8 @@ export function CourtFinderSection({
           transition: all 0.3s ease;
         }
         .checkbox-wrapper input[type='checkbox']:checked + label svg rect {
-          stroke: #1b3a2e;
-          fill: #1b3a2e;
+          stroke: #2D5A27;
+          fill: #2D5A27;
         }
       `}</style>
 
@@ -348,7 +348,7 @@ export function CourtFinderSection({
         <div className="mb-4">
           <button
             onClick={() => onFiltersCollapsedChange(!filtersCollapsed)}
-            className="w-full py-3 px-4 bg-[#1B3A2E] text-white rounded-lg font-semibold flex items-center justify-between min-h-[44px]"
+            className="w-full py-3 px-4 bg-[#2D5A27] text-[#FFFDD0] rounded-lg font-semibold flex items-center justify-between min-h-[44px]"
           >
             <span>Filters</span>
             <span className="text-xl">{filtersCollapsed ? '▼' : '▲'}</span>
@@ -399,7 +399,7 @@ export function CourtFinderSection({
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="bg-white rounded-lg p-2 md:p-4 shadow-lg"
+          className="bg-[#FFFDD0] rounded-lg p-2 md:p-4 shadow-lg"
         >
           {loading ? (
             <motion.div
@@ -461,7 +461,7 @@ export function CourtFinderSection({
             className="mt-4 flex justify-center gap-6 text-sm"
           >
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-[#1B3A2E] rounded-full" />
+              <div className="w-4 h-4 bg-[#2D5A27] rounded-full" />
               <span className="text-black dark:text-white">All Tennis Courts</span>
             </div>
           </motion.div>

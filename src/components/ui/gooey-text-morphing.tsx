@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface GooeyTextProps {
@@ -32,17 +33,24 @@ export function GooeyText({
   const currentText = texts[currentTextIndex];
 
   return (
-    <div className={cn("relative", className)}>
-      <div className="flex items-center justify-center">
-        <span
-          className={cn(
-            "inline-block select-none text-center text-6xl md:text-[60pt]",
-            "text-foreground",
-            textClassName
-          )}
-        >
-          {currentText}
-        </span>
+    <div className={cn("relative min-h-[1.2em]", className)}>
+      <div className="flex min-h-[inherit] items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={currentTextIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className={cn(
+              "inline-block select-none text-center text-6xl md:text-[60pt]",
+              "text-foreground",
+              textClassName
+            )}
+          >
+            {currentText}
+          </motion.span>
+        </AnimatePresence>
       </div>
     </div>
   );

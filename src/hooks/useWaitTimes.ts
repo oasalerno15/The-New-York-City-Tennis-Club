@@ -5,13 +5,19 @@ import { supabase, formatSupabaseError, type WaitTime } from '@/lib/supabase';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 
 const BRIAN_WATKINS_KEY = 'Brian Watkins Tennis Courts';
+const SOUTH_OXFORD_KEY = 'South Oxford Park Tennis Courts';
+
+const EMPTY_COURTS = (): { [key: string]: WaitTime | null } => ({
+  'Hudson River Park Courts': null,
+  'Pier 42': null,
+  [BRIAN_WATKINS_KEY]: null,
+  [SOUTH_OXFORD_KEY]: null,
+});
 
 export function useWaitTimes() {
-  const [waitTimes, setWaitTimes] = useState<{ [key: string]: WaitTime | null }>({
-    'Hudson River Park Courts': null,
-    'Pier 42': null,
-    [BRIAN_WATKINS_KEY]: null,
-  });
+  const [waitTimes, setWaitTimes] = useState<{ [key: string]: WaitTime | null }>(
+    EMPTY_COURTS()
+  );
   const [loading, setLoading] = useState(true);
   const [reporting, setReporting] = useState<string | null>(null);
   const [reportSuccess, setReportSuccess] = useState<string | null>(null);
@@ -27,7 +33,7 @@ export function useWaitTimes() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'green':
-        return 'bg-green-500';
+        return 'bg-[#2D5A27]';
       case 'yellow':
         return 'bg-yellow-500';
       case 'orange':
@@ -54,11 +60,7 @@ export function useWaitTimes() {
     try {
       setLoading(true);
       if (!supabase) {
-        setWaitTimes({
-          'Hudson River Park Courts': null,
-          'Pier 42': null,
-          [BRIAN_WATKINS_KEY]: null,
-        });
+        setWaitTimes(EMPTY_COURTS());
         return;
       }
       const { data, error } = await supabase
@@ -68,20 +70,11 @@ export function useWaitTimes() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        const courtWaitTimes: { [key: string]: WaitTime | null } = {
-          'Hudson River Park Courts': null,
-          'Pier 42': null,
-          [BRIAN_WATKINS_KEY]: null,
-        };
-        setWaitTimes(courtWaitTimes);
+        setWaitTimes(EMPTY_COURTS());
         return;
       }
 
-      const courtWaitTimes: { [key: string]: WaitTime | null } = {
-        'Hudson River Park Courts': null,
-        'Pier 42': null,
-        [BRIAN_WATKINS_KEY]: null,
-      };
+      const courtWaitTimes = EMPTY_COURTS();
 
       data?.forEach((wt) => {
         const key = normalizeCourtNameFromDb(wt.court_name);
@@ -92,11 +85,7 @@ export function useWaitTimes() {
 
       setWaitTimes(courtWaitTimes);
     } catch {
-      setWaitTimes({
-        'Hudson River Park Courts': null,
-        'Pier 42': null,
-        [BRIAN_WATKINS_KEY]: null,
-      });
+      setWaitTimes(EMPTY_COURTS());
     } finally {
       setLoading(false);
     }

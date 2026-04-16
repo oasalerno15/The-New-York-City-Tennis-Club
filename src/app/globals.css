@@ -137,6 +137,74 @@
   }
 }
 
+@media (min-width: 768px) {
+  .desktop-rebrand {
+    background: #FFFFFF !important;
+    color: #1A1A1A !important;
+  }
+
+  .desktop-rebrand [class*='bg-white'] {
+    background-color: #FFFFFF !important;
+  }
+
+  .desktop-rebrand [class*='text-gray-'],
+  .desktop-rebrand [class*='text-black'] {
+    color: #1A1A1A !important;
+  }
+
+  .desktop-rebrand .text-\[\#1e3a5f\] {
+    color: #2D5A27 !important;
+  }
+
+  .desktop-rebrand [class*='text-[#2e4f7a'],
+  .desktop-rebrand [class*='text-[#4a6fa5'] {
+    color: #2D5A27 !important;
+  }
+
+  .desktop-rebrand .bg-\[\#1e3a5f\] {
+    background-color: #2D5A27 !important;
+    color: #FFFDD0 !important;
+  }
+
+  .desktop-rebrand [class*='bg-[#2e4f7a'],
+  .desktop-rebrand [class*='bg-[#4a6fa5'],
+  .desktop-rebrand [class*='bg-[#1e3a5f'] {
+    background-color: #2D5A27 !important;
+    color: #FFFDD0 !important;
+  }
+
+  .desktop-rebrand .border-\[\#1e3a5f\] {
+    border-color: #2D5A27 !important;
+  }
+
+  .desktop-rebrand [class*='border-[#2e4f7a'],
+  .desktop-rebrand [class*='border-[#4a6fa5'],
+  .desktop-rebrand [class*='border-[#1e3a5f'] {
+    border-color: #2D5A27 !important;
+  }
+
+  .desktop-rebrand [class*='hover:bg-\\[\\#1e3a5f\\]'] {
+    background-color: #2D5A27 !important;
+    color: #FFFDD0 !important;
+  }
+
+  .desktop-rebrand [class*='hover:bg-[#1e3a5f'],
+  .desktop-rebrand [class*='hover:bg-[#2e4f7a'],
+  .desktop-rebrand [class*='hover:bg-[#4a6fa5'] {
+    background-color: #2D5A27 !important;
+    color: #FFFDD0 !important;
+  }
+
+  .desktop-rebrand [class*='bg-gray-'] {
+    background-color: #f4f4f4 !important;
+  }
+
+  .desktop-rebrand [class*='dark:text-white'] {
+    color: #1A1A1A !important;
+  }
+
+}
+
 /* Additional mobile optimizations */
 @media (max-width: 768px) {
   /* Ensure proper mobile spacing */
@@ -220,7 +288,7 @@
     }
     
     /* Smooth transitions for mobile elements - PERFORMANCE OPTIMIZED */
-    [class*="md:hidden"] {
+    .landing-mobile-route {
       transition: none !important; /* Disabled for performance */
     }
     

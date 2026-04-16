@@ -23,6 +23,17 @@ export interface NewWaitTime {
   expires_at: string
 }
 
+/** Morning sign-up sheet line reports (mobile “Sheets” tab). */
+export interface SignupSheetReport {
+  id: string
+  court_name: string
+  borough: string
+  status: 'sheet_empty' | 'few_names' | 'line_forming' | 'sheet_full'
+  photo_url: string | null
+  created_at: string
+  expires_at: string
+}
+
 /** Postgrest errors are plain objects, not always `Error`. */
 export function formatSupabaseError(err: unknown): string {
   if (err && typeof err === 'object') {

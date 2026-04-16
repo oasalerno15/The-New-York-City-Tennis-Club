@@ -179,8 +179,8 @@ const MapComponent = ({ courts, selectedBoroughs, selectedSurfaces, selectedPerm
   }, [map, filteredCourts]);
 
   const getSurfaceIcon = () => {
-    // All pins are green now
-    const color = '#1B3A2E'; // Green for all courts
+    // Brand pin color (navy)
+    const color = '#2D5A27';
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
         <circle cx="15" cy="15" r="12" fill="${color}" stroke="white" stroke-width="2"/>
@@ -254,7 +254,7 @@ const QAItem = ({ qa }: { qa: { question: string; answer: string } }) => {
       {/* Question - Always visible */}
       <div className='py-4 md:py-6 cursor-pointer transition-all duration-300'>
         <div className='flex items-center justify-between'>
-          <h3 className={`text-xl md:text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-green-600' : 'text-gray-800'}`}>
+          <h3 className={`text-xl md:text-2xl font-semibold transition-colors duration-300 ${isHovered ? 'text-[#2e4f7a]' : 'text-gray-800'}`}>
             {qa.question}
           </h3>
           <motion.svg
@@ -316,6 +316,10 @@ interface MediaContentCollection {
   [key: string]: MediaContent;
 }
 
+/** Optional photo hero if you switch ScrollExpandMedia to backdrop="image". */
+const HERO_AMBIENT_BG =
+  'https://images.unsplash.com/photo-1587280501635-68a419bf0b43?q=85&w=2400&auto=format&fit=crop';
+
 const sampleMediaContent: MediaContentCollection = {
   video: {
     // You can use local files from public folder like this:
@@ -325,14 +329,14 @@ const sampleMediaContent: MediaContentCollection = {
     
     // Using your tennis video:
     src: '/mixkit-two-people-playing-tennis-aerial-view-880-hd-ready.mp4',
-    poster: '/sunset.jpg', // Using sunset as poster image
-    background: '/sunset.jpg', // Using your sunset image as background
-    title: 'The New York City Tennis Club',
+    poster: HERO_AMBIENT_BG,
+    background: HERO_AMBIENT_BG,
+    title: 'SmartCourtNYC',
     date: 'Scroll down',
     scrollToExpand: 'Scroll Down',
     about: {
       overview:
-        'Welcome to The New York City Tennis Club - your ultimate resource for real-time wait times and court availability across NYC\'s premier tennis facilities. We\'re revolutionizing the way New Yorkers access tennis courts by providing instant updates, eliminating guesswork, and ensuring you never waste time waiting for a court again.',
+        'Welcome to SmartCourt NYC - your ultimate resource for real-time wait times and court availability across NYC\'s premier tennis facilities. We\'re revolutionizing the way New Yorkers access tennis courts by providing instant updates, eliminating guesswork, and ensuring you never waste time waiting for a court again.',
       conclusion:
         'Join the tennis revolution in NYC. With our innovative platform, you can check wait times, book courts instantly, and maximize your playing time. Experience the future of tennis accessibility in the city that never sleeps.',
     },
@@ -344,13 +348,13 @@ const sampleMediaContent: MediaContentCollection = {
     
     // Or keep using external URLs:
     src: 'https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=1280&auto=format&fit=crop',
-    background: '/sunset.jpg', // Using your sunset image as background
-    title: 'The New York City Tennis Club',
-    date: 'Aerial View',
+    background: HERO_AMBIENT_BG,
+    title: 'SmartCourtNYC',
+    date: 'Scroll down',
     scrollToExpand: 'Scroll Down',
     about: {
       overview:
-        'The New York City Tennis Club is transforming the tennis experience in NYC. Our platform provides real-time wait times, court availability, and instant booking capabilities, making it easier than ever for tennis enthusiasts to find and secure court time across the city.',
+        'SmartCourt NYC is transforming the tennis experience in NYC. Our platform provides real-time wait times, court availability, and instant booking capabilities, making it easier than ever for tennis enthusiasts to find and secure court time across the city.',
       conclusion:
         'Say goodbye to long waits and hello to more tennis. Our revolutionary approach to court management is changing the game for NYC tennis players, ensuring you spend more time playing and less time waiting.',
     },
@@ -371,7 +375,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const [waitTimes, setWaitTimes] = useState<{ [key: string]: WaitTime | null }>({
     'Hudson River Park Courts': null,
     'Pier 42': null,
-    'Brian Watkins Tennis Courts': null
+    'Brian Watkins Tennis Courts': null,
+    'South Oxford Park Tennis Courts': null,
   });
   const [waitTimesLoading, setWaitTimesLoading] = useState(true);
   const [reporting, setReporting] = useState<string | null>(null);
@@ -384,6 +389,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   const pierCommentRef = useRef<HTMLInputElement>(null);
   const brianSelectRef = useRef<HTMLSelectElement>(null);
   const brianCommentRef = useRef<HTMLInputElement>(null);
+  const southOxfordSelectRef = useRef<HTMLSelectElement>(null);
+  const southOxfordCommentRef = useRef<HTMLInputElement>(null);
 
 
 
@@ -411,7 +418,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
   // Get status color for display
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'green': return 'bg-green-500';
+      case 'green': return 'bg-[#4a6fa5]';
       case 'yellow': return 'bg-yellow-500';
       case 'orange': return 'bg-orange-500';
       case 'red': return 'bg-red-500';
@@ -437,7 +444,12 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     try {
       setWaitTimesLoading(true);
       if (!supabase) {
-        setWaitTimes({ 'Hudson River Park Courts': null, 'Pier 42': null, 'Brian Watkins Tennis Courts': null });
+        setWaitTimes({
+          'Hudson River Park Courts': null,
+          'Pier 42': null,
+          'Brian Watkins Tennis Courts': null,
+          'South Oxford Park Tennis Courts': null,
+        });
         return;
       }
       // Load only non-expired wait times from database
@@ -455,7 +467,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         const courtWaitTimes: { [key: string]: WaitTime | null } = {
           'Hudson River Park Courts': null,
           'Pier 42': null,
-          'Brian Watkins Tennis Courts': null
+          'Brian Watkins Tennis Courts': null,
+          'South Oxford Park Tennis Courts': null,
         };
         setWaitTimes(courtWaitTimes);
         return;
@@ -465,7 +478,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
-        'Brian Watkins Tennis Courts': null
+        'Brian Watkins Tennis Courts': null,
+        'South Oxford Park Tennis Courts': null,
       };
 
       if (data) {
@@ -486,7 +500,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
       const courtWaitTimes: { [key: string]: WaitTime | null } = {
         'Hudson River Park Courts': null,
         'Pier 42': null,
-        'Brian Watkins Tennis Courts': null
+        'Brian Watkins Tennis Courts': null,
+        'South Oxford Park Tennis Courts': null,
       };
       setWaitTimes(courtWaitTimes);
     } finally {
@@ -741,7 +756,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           stroke-dashoffset: 400;
           transition: .5s stroke-dashoffset;
           opacity: 0;
-          stroke: #1B3A2E;
+          stroke: #2D5A27;
           stroke-width: 3;
           fill: none;
         }
@@ -759,11 +774,11 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .checkbox-wrapper input[type="checkbox"]:checked + label svg rect {
-          stroke: #1B3A2E;
-          fill: #1B3A2E;
+          stroke: #2D5A27;
+          fill: #2D5A27;
         }
 
-        /* Big Green Animated Hover Cards */
+        /* Brand-tinted hover cards */
         .cards {
           display: flex;
           flex-direction: column;
@@ -772,20 +787,20 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .cards .red {
           background-color: white;
-          box-shadow: 0 6px 20px rgba(27, 58, 46, 0.4);
-          border: 2px solid rgba(27, 58, 46, 0.3);
+          box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
+          border: 2px solid rgba(30, 58, 95, 0.3);
         }
 
         .cards .blue {
           background-color: white;
-          box-shadow: 0 6px 20px rgba(27, 58, 46, 0.4);
-          border: 2px solid rgba(27, 58, 46, 0.3);
+          box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
+          border: 2px solid rgba(30, 58, 95, 0.3);
         }
 
         .cards .green {
           background-color: white;
-          box-shadow: 0 6px 20px rgba(27, 58, 46, 0.4);
-          border: 2px solid rgba(27, 58, 46, 0.3);
+          box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
+          border: 2px solid rgba(30, 58, 95, 0.3);
         }
 
         .cards .card {
@@ -849,10 +864,10 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           bottom: -60px;
           left: -20px;
           background: white;
-          border: 2px solid rgba(27, 58, 46, 0.5);
+          border: 2px solid rgba(30, 58, 95, 0.5);
           border-radius: 8px;
           padding: 12px 16px;
-          box-shadow: 0 4px 12px rgba(27, 58, 46, 0.3);
+          box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
           opacity: 0;
           visibility: hidden;
           transition: all 0.3s ease;
@@ -864,7 +879,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .cards .card:hover {
           /* Keep shadow effect but no scale transform to prevent text movement */
-          box-shadow: 0 10px 30px rgba(27, 58, 46, 0.5);
+          box-shadow: 0 10px 30px rgba(30, 58, 95, 0.5);
         }
 
         .cards .card:hover .comment-box {
@@ -884,7 +899,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           max-width: 600px;
           height: 350px;
           border-radius: 12px;
-          background: #1B3A2E;
+          background: #2D5A27;
           display: flex;
           gap: 12px;
           padding: 1.2em;
@@ -899,7 +914,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           border-radius: 8px;
           transition: all .5s;
           background: white;
-          border: 2px solid #1B3A2E;
+          border: 2px solid #2D5A27;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -916,7 +931,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           transform: rotate(-90deg);
           transition: all .5s;
           text-transform: uppercase;
-          color: #1B3A2E;
+          color: #2D5A27;
           letter-spacing: .1em;
           font-size: 1.1em;
           font-weight: 600;
@@ -976,7 +991,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .comment-input input {
           width: 100%;
           padding: 12px 16px;
-          border: 2px solid rgba(27, 58, 46, 0.3);
+          border: 2px solid rgba(30, 58, 95, 0.3);
           border-radius: 8px;
           background: white;
           color: #374151;
@@ -986,8 +1001,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .comment-input input:focus {
           outline: none;
-          border-color: rgba(27, 58, 46, 0.6);
-          box-shadow: 0 0 0 3px rgba(27, 58, 46, 0.1);
+          border-color: rgba(30, 58, 95, 0.6);
+          box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
         }
 
         .comment-input input::placeholder {
@@ -1003,7 +1018,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           border-radius: 6px;
           transition: all .5s;
           background: white;
-          border: 2px solid #15803d;
+          border: 2px solid #2e4f7a;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -1031,7 +1046,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .comment-input-inline input {
           width: 100%;
           padding: 18px 24px;
-          border: 2px solid rgba(27, 58, 46, 0.4);
+          border: 2px solid rgba(30, 58, 95, 0.4);
           border-radius: 12px;
           background: white;
           color: #374151;
@@ -1041,8 +1056,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .comment-input-inline input:focus {
           outline: none;
-          border-color: rgba(27, 58, 46, 0.7);
-          box-shadow: 0 0 0 3px rgba(27, 58, 46, 0.1);
+          border-color: rgba(30, 58, 95, 0.7);
+          box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
         }
 
         .comment-input-inline input::placeholder {
@@ -1077,7 +1092,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         .wait-time-selector select {
           width: 100%;
           padding: 14px 18px;
-          border: 2px solid rgba(27, 58, 46, 0.4);
+          border: 2px solid rgba(30, 58, 95, 0.4);
           border-radius: 10px;
           background: white;
           color: #374151;
@@ -1088,13 +1103,13 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
         .wait-time-selector select:focus {
           outline: none;
-          border-color: rgba(27, 58, 46, 0.7);
-          box-shadow: 0 0 0 3px rgba(27, 58, 46, 0.1);
+          border-color: rgba(30, 58, 95, 0.7);
+          box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
         }
 
         .report-btn {
           padding: 14px 24px;
-          background: rgba(27, 58, 46, 0.9);
+          background: rgba(30, 58, 95, 0.9);
           color: white;
           border: none;
           border-radius: 10px;
@@ -1106,9 +1121,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         }
 
         .report-btn:hover {
-          background: rgba(27, 58, 46, 1);
+          background: rgba(30, 58, 95, 1);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(27, 58, 46, 0.3);
+          box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
         }
         
         /* Additional mobile optimizations */
@@ -1144,7 +1159,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           }
           
           /* Mobile card padding adjustments */
-          .bg-white.border-2.border-\[#1B3A2E\].rounded-lg {
+          .bg-white.border-2.border-\[#1e3a5f\].rounded-lg {
             padding: 12px !important;
           }
           
@@ -1251,7 +1266,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            NYC Courts-Live Status
+            SmartCourt NYC — Live Status
           </motion.h2>
 
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16'>
@@ -1277,16 +1292,16 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               {/* Clean, Mobile-Friendly Court Info Cards */}
               <div className="space-y-4">
                 {/* Hudson River Park Courts */}
-                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Hudson River Park Courts</h4>
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Hudson River Park Courts</h4>
                     <div className={`w-3 h-3 ${waitTimes['Hudson River Park Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Hudson River Park Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
-                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
                         defaultValue={waitTimes['Hudson River Park Courts']?.wait_time || "Select wait time..."}
                         ref={hudsonSelectRef}
                       >
@@ -1305,8 +1320,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           reporting === 'Hudson River Park Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Hudson River Park Courts'
-                            ? 'bg-green-600 text-white scale-105'
-                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                            ? 'bg-[#1e3a5f] text-white scale-105'
+                            : 'bg-[#1e3a5f] text-white hover:bg-[#1e3a5f]/90 hover:scale-105'
                         }`}
                       >
                         {reporting === 'Hudson River Park Courts' ? 'Reporting...' : 
@@ -1316,23 +1331,23 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                     <input 
                       type="text" 
                       placeholder="Leave a comment about the wait time..." 
-                      className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                      className="w-full px-3 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
                       ref={hudsonCommentRef}
                     />
                   </div>
                 </div>
                 
                 {/* Pier 42 */}
-                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Pier 42</h4>
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Pier 42</h4>
                     <div className={`w-3 h-3 ${waitTimes['Pier 42'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Pier 42'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
-                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
                         defaultValue={waitTimes['Pier 42']?.wait_time || "Select wait time..."}
                         ref={pierSelectRef}
                       >
@@ -1351,8 +1366,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           reporting === 'Pier 42' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Pier 42'
-                            ? 'bg-green-600 text-white scale-105'
-                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                            ? 'bg-[#1e3a5f] text-white scale-105'
+                            : 'bg-[#1e3a5f] text-white hover:bg-[#1e3a5f]/90 hover:scale-105'
                         }`}
                       >
                         {reporting === 'Pier 42' ? 'Reporting...' : 
@@ -1362,23 +1377,23 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                     <input 
                       type="text" 
                       placeholder="Leave a comment about the wait time..." 
-                      className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                      className="w-full px-3 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
                       ref={pierCommentRef}
                     />
                   </div>
                 </div>
                 
                 {/* Brian Watkins Tennis Courts */}
-                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Tennis Courts</h4>
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Brian Watkins Tennis Courts</h4>
                     <div className={`w-3 h-3 ${waitTimes['Brian Watkins Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex gap-2 flex-wrap">
                       <select 
-                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
                         defaultValue={waitTimes['Brian Watkins Tennis Courts']?.wait_time || "Select wait time..."}
                         ref={brianSelectRef}
                       >
@@ -1397,8 +1412,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                           reporting === 'Brian Watkins Tennis Courts' 
                             ? 'bg-gray-400 cursor-not-allowed' 
                             : reportSuccess === 'Brian Watkins Tennis Courts'
-                            ? 'bg-green-600 text-white scale-105'
-                            : 'bg-[#1B3A2E] text-white hover:bg-[#1B3A2E]/90 hover:scale-105'
+                            ? 'bg-[#1e3a5f] text-white scale-105'
+                            : 'bg-[#1e3a5f] text-white hover:bg-[#1e3a5f]/90 hover:scale-105'
                         }`}
                       >
                         {reporting === 'Brian Watkins Tennis Courts' ? 'Reporting...' : 
@@ -1408,8 +1423,54 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                     <input 
                       type="text" 
                       placeholder="Leave a comment about the wait time..." 
-                      className="w-full px-3 py-2 border-2 border-[#1B3A2E] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1B3A2E] focus:ring-2 focus:ring-[#1B3A2E] focus:ring-opacity-20"
+                      className="w-full px-3 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
                       ref={brianCommentRef}
+                    />
+                  </div>
+                </div>
+
+                {/* South Oxford Park Tennis Courts */}
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">South Oxford Park Tennis Courts</h4>
+                    <div className={`w-3 h-3 ${waitTimes['South Oxford Park Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['South Oxford Park Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex gap-2 flex-wrap">
+                      <select 
+                        className="flex-1 min-w-0 px-2 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
+                        defaultValue={waitTimes['South Oxford Park Tennis Courts']?.wait_time || "Select wait time..."}
+                        ref={southOxfordSelectRef}
+                      >
+                        <option value="Select wait time...">Select wait time...</option>
+                        <option value="Less than 1 hour">Less than 1 hour</option>
+                        <option value="1-2 hours">1-2 hours</option>
+                        <option value="2-3 hours">2-3 hours</option>
+                        <option value="More than 3 hours">More than 3 hours</option>
+                      </select>
+                      <button 
+                        onClick={() => {
+                          handleReportWaitTime('South Oxford Park Tennis Courts', southOxfordSelectRef.current?.value || '', southOxfordCommentRef.current?.value || '');
+                        }}
+                        disabled={reporting === 'South Oxford Park Tennis Courts'}
+                        className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 ${
+                          reporting === 'South Oxford Park Tennis Courts' 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : reportSuccess === 'South Oxford Park Tennis Courts'
+                            ? 'bg-[#1e3a5f] text-white scale-105'
+                            : 'bg-[#1e3a5f] text-white hover:bg-[#1e3a5f]/90 hover:scale-105'
+                        }`}
+                      >
+                        {reporting === 'South Oxford Park Tennis Courts' ? 'Reporting...' : 
+                         reportSuccess === 'South Oxford Park Tennis Courts' ? '✓ Reported!' : 'Report'}
+                      </button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Leave a comment about the wait time..." 
+                      className="w-full px-3 py-2 border-2 border-[#1e3a5f] rounded-lg bg-white text-sm focus:outline-none focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f] focus:ring-opacity-20"
+                      ref={southOxfordCommentRef}
                     />
                   </div>
                 </div>
@@ -1439,9 +1500,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
               {/* Big Green Display Cards */}
               <div className="space-y-4">
                 {/* Hudson River Park Courts */}
-                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Hudson River Park Courts</h4>
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Hudson River Park Courts</h4>
                     <div className={`w-3 h-3 ${waitTimes['Hudson River Park Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Hudson River Park Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
@@ -1463,9 +1524,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 </div>
                 
                 {/* Pier 42 */}
-                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Pier 42</h4>
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Pier 42</h4>
                     <div className={`w-3 h-3 ${waitTimes['Pier 42'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Pier 42'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
@@ -1487,9 +1548,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 </div>
                 
                 {/* Brian Watkins Tennis Courts */}
-                <div className="bg-white border-2 border-[#1B3A2E] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1B3A2E]">Brian Watkins Tennis Courts</h4>
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Brian Watkins Tennis Courts</h4>
                     <div className={`w-3 h-3 ${waitTimes['Brian Watkins Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
                   </div>
                   <div className="space-y-2">
@@ -1499,6 +1560,30 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                         <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Brian Watkins Tennis Courts'].created_at).getTime())}</p>
                         {waitTimes['Brian Watkins Tennis Courts'].comment && waitTimes['Brian Watkins Tennis Courts'].comment.trim() !== '' ? (
                           <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Tennis Courts'].comment}&rdquo;</p>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 font-medium">No wait time reported</p>
+                        <p className="text-sm text-gray-400">Be the first to report!</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {/* South Oxford Park Tennis Courts */}
+                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#1e3a5f]">South Oxford Park Tennis Courts</h4>
+                    <div className={`w-3 h-3 ${waitTimes['South Oxford Park Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['South Oxford Park Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
+                  </div>
+                  <div className="space-y-2">
+                    {waitTimes['South Oxford Park Tennis Courts'] ? (
+                      <>
+                        <p className="text-gray-700 font-medium">{waitTimes['South Oxford Park Tennis Courts'].wait_time}</p>
+                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['South Oxford Park Tennis Courts'].created_at).getTime())}</p>
+                        {waitTimes['South Oxford Park Tennis Courts'].comment && waitTimes['South Oxford Park Tennis Courts'].comment.trim() !== '' ? (
+                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['South Oxford Park Tennis Courts'].comment}&rdquo;</p>
                         ) : null}
                       </>
                     ) : (
@@ -1752,7 +1837,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
           className='mt-4 flex justify-center gap-6 text-sm'
         >
           <div className='flex items-center gap-2'>
-            <div className='w-4 h-4 bg-[#1B3A2E] rounded-full'></div>
+            <div className='w-4 h-4 bg-[#1e3a5f] rounded-full'></div>
             <span className='text-black dark:text-white'>All Tennis Courts</span>
           </div>
         </motion.div>
@@ -1816,7 +1901,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
             className='text-center text-gray-600 mt-16 text-lg'
           >
             For specific court details, rules, and permit enforcement, always check our{' '}
-            <span className='text-[#1B3A2E] font-semibold'>Court Finder</span> above.
+            <span className='text-[#1e3a5f] font-semibold'>Court Finder</span> above.
           </motion.p>
         </div>
       </motion.div>
@@ -1830,124 +1915,23 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         className='mt-16 md:mt-24 py-16 md:py-20 bg-white'
       >
         <div className='max-w-7xl mx-auto px-4'>
-          
-          <div className='flex flex-col lg:flex-row gap-8 md:gap-12 items-center'>
-            {/* Left Side - Content */}
+          <div className='flex items-center justify-center'>
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className='lg:w-2/5 space-y-6 md:space-y-8'
+              className='w-full max-w-4xl'
             >
               <motion.h2
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className='text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight'
+                className='text-center text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight'
               >
                 Tennis convenience starts here
               </motion.h2>
-              
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className='text-xl text-gray-600 leading-relaxed'
-              >
-                Mobile app coming soon
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                className='space-y-4'
-              >
-                <div className='flex items-center space-x-3'>
-                  <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
-                    <svg className='w-4 h-4 text-white' fill='currentColor' viewBox='0 0 20 20'>
-                      <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
-                    </svg>
-                  </div>
-                  <span className='text-lg text-gray-700 font-medium'>Find courts instantly</span>
-                </div>
-                
-                <div className='flex items-center space-x-3'>
-                  <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
-                    <svg className='w-4 h-4 text-white' fill='currentColor' viewBox='0 0 20 20'>
-                      <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
-                    </svg>
-                  </div>
-                  <span className='text-lg text-gray-700 font-medium'>Real-time wait times</span>
-                </div>
-                
-                <div className='flex items-center space-x-3'>
-                  <div className='w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center'>
-                    <svg className='w-4 h-4 text-white' fill='currentColor' viewBox='0 0 20 20'>
-                      <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
-                    </svg>
-                  </div>
-                  <span className='text-lg text-gray-700 font-medium'>Never guess again</span>
-                </div>
-              </motion.div>
-
-                            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 1.0 }}
-                className='flex flex-col items-center space-y-4'
-              >
-                {/* QR Code section removed */}
-              </motion.div>
-
-
-            </motion.div>
-
-            {/* Right Side - 3D iPhone Mockup */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className='lg:w-3/5 flex justify-center'
-      >
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className='relative'
-              >
-                {/* Tennis Video in the center - PERFORMANCE OPTIMIZED */}
-                <div className='w-full h-[700px] md:h-[900px] lg:h-[1100px] relative mobile-video'>
-                  <video 
-                    ref={videoRef}
-                    className='w-full h-full object-contain rounded-lg'
-                    muted
-                    playsInline
-                    preload="none"
-                    poster="/sunset.jpg"
-                    onEnded={(e) => {
-                      // Stop the video when it ends and don't replay
-                      e.currentTarget.pause();
-                      setHasPlayed(true);
-                    }}
-                    style={{ 
-                      outline: 'none',
-                      willChange: 'auto',
-                      transform: 'translateZ(0)'
-                    }}
-                  >
-                    <source src="/8_22_2025_14_53_32_contentcore.xyz.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -1959,109 +1943,29 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 const Demo = () => {
   const [mediaType] = useState('video');
   const currentMedia = sampleMediaContent[mediaType];
-  const [showNav, setShowNav] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Handle scroll to hide/show navigation
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setShowNav(scrollY < 1); // Hide nav immediately when scrolling
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <div className='min-h-screen overflow-x-hidden'>
-
-      {/* Desktop Header - Only visible on desktop (lg = 1024px+) */}
-      <div className="hidden lg:block">
-        <AnimatePresence>
-          {showNav && (
-            <motion.header 
-              initial={{ y: -100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -100, opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className='fixed top-0 left-0 right-0 z-50'
-            >
-              <div className='container mx-auto px-4 py-2 md:py-3'>
-                <div className='flex items-center justify-center'>
-                  <div className='text-center'>
-                    <h1 
-                      className='text-base md:text-lg lg:text-xl font-semibold text-white text-center drop-shadow-lg leading-tight'
-                    >
-                      Check Wait Times • Find a Court
-                    </h1>
-                    <p 
-                      className='text-sm md:text-base text-white/90 text-center drop-shadow-lg leading-tight mt-1'
-                    >
-                      Your free navigator to NYC public tennis
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.header>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Navigation Bar - Desktop only (MobileAppShell has its own header) */}
-      <div className="hidden lg:block">
-        <AnimatePresence>
-          {showNav && (
-            <motion.nav 
-              initial={{ y: -100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -100, opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className='fixed top-0 left-0 right-0 z-50'
-            >
-            {/* Logo - Positioned at very top left */}
-            <div 
-              className='absolute top-3 left-0 md:left-2 z-60 md:-top-24 lg:-top-20 mobile-logo'
-            >
-              <img 
-                src='/logo.png' 
-                alt='NYC Tennis Club Logo' 
-                className='h-32 w-auto md:h-72 lg:h-96 object-contain drop-shadow-lg'
-                style={{ background: 'transparent' }}
-              />
-            </div>
-            
-            <div className='container mx-auto px-4 py-12 md:py-14 lg:py-18'>
-              <div className='flex items-center justify-center'>
-                {/* Navigation Links - Centered */}
-                {/* Navigation buttons removed as requested */}
-              </div>
-            </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
-      </div>
-
-      {/* Desktop Version - Full Scroll Expansion */}
-      <div className="hidden lg:block">
+      {/* Desktop — full scroll expansion hero */}
+      <div className="desktop-rebrand hidden min-[768px]:block">
         <ScrollExpandMedia
+          backdrop="light"
           mediaType={mediaType as 'video' | 'image'}
           mediaSrc={currentMedia.src}
           posterSrc={mediaType === 'video' ? currentMedia.poster : undefined}
-          bgImageSrc={currentMedia.background}
           title={currentMedia.title}
-          date={currentMedia.date}
           scrollToExpand={currentMedia.scrollToExpand}
         >
           <MediaContent mediaType={mediaType as 'video' | 'image'} />
         </ScrollExpandMedia>
       </div>
 
-      {/* Mobile Version - App Shell with Tab Navigation (shows when viewport < 1024px) */}
-      <div className="lg:hidden bg-white min-h-screen min-h-dvh">
+      {/* Mobile tab app when viewport is under 768px wide (px breakpoint — matches JS, not 48rem) */}
+      <div className="landing-mobile-route block min-[768px]:hidden bg-white min-h-screen min-h-dvh">
         <MobileAppShell />
       </div>
     </div>

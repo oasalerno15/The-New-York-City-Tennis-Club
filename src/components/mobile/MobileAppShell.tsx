@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MobileTabBar, type MobileTab } from './MobileTabBar';
+import { SignupSheetsPanel } from '@/components/mobile/signup-sheets/SignupSheetsPanel';
 import { WaitTimesSection } from '@/components/blocks/WaitTimesSection';
 import { CourtFinderSection } from '@/components/blocks/CourtFinderSection';
 import { MoreSection } from '@/components/blocks/MoreSection';
@@ -54,10 +54,7 @@ export function MobileAppShell() {
 
   if (!sessionReady) {
     return (
-      <div
-        className="min-h-dvh bg-[#1B3A2E]"
-        aria-busy="true"
-      >
+      <div className="min-h-dvh bg-white" aria-busy="true">
         <span className="sr-only">Loading</span>
       </div>
     );
@@ -66,48 +63,38 @@ export function MobileAppShell() {
   if (!hasEnteredApp) {
     return (
       <div
-        className="mobile-app-shell min-h-dvh flex flex-col bg-[#1B3A2E] text-white"
+        className="mobile-app-shell min-h-dvh flex flex-col bg-white text-[#1A1A1A]"
         style={{
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        <div className="relative flex-1 flex flex-col items-center justify-center text-center px-6 py-8 bg-gradient-to-b from-[#1B3A2E] via-[#234d3c] to-[#2d5c48] min-h-0 overflow-hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.12]"
-            style={{
-              backgroundImage: `radial-gradient(circle at 20% 30%, white 0, transparent 45%),
-                radial-gradient(circle at 80% 70%, white 0, transparent 40%)`,
-            }}
-          />
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto bg-white px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative z-10 w-full max-w-md space-y-6"
+            transition={{ duration: 0.45 }}
+            className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center space-y-5 text-center"
           >
-            <div className="flex justify-center px-2">
-              <Image
-                src="/logo.png"
-                alt="NYC Tennis Club"
-                width={640}
-                height={640}
-                priority
-                className="h-[min(52vh,22rem)] w-auto max-h-[58vh] min-h-[12rem] max-w-[min(96vw,28rem)] object-contain object-center drop-shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
-              />
-            </div>
-            <h1 className="text-3xl font-bold leading-tight text-balance sm:text-4xl">
-              Live wait times, real courts
+            <h1
+              className="w-full text-[clamp(1.5rem,5.2vw,1.9rem)] font-semibold leading-tight tracking-[0.02em] text-[#2D5A27]"
+              style={{ fontFamily: 'var(--font-display-serif), Georgia, serif' }}
+            >
+              SmartCourtNYC
             </h1>
-            <p className="text-base text-white/85 leading-relaxed">
-              See what players are reporting and share what you see before you head out.
-            </p>
+            <div className="flex flex-col space-y-3 text-[#1A1A1A]">
+              <p className="text-lg font-semibold leading-snug text-balance sm:text-xl">
+                Live wait times, real courts
+              </p>
+              <p className="text-sm leading-relaxed text-[#1A1A1A]/80 sm:text-[0.9375rem]">
+                See what players are reporting and share what you see before you head out.
+              </p>
+            </div>
             <motion.button
               type="button"
               onClick={enterApp}
               whileTap={{ scale: 0.98 }}
-              className="mt-4 w-full rounded-2xl bg-white px-6 py-4 text-base font-semibold text-[#1B3A2E] shadow-lg shadow-black/15 transition active:bg-white/90"
+              className="mt-4 w-full rounded-xl bg-[#2D5A27] px-4 py-4 text-base font-semibold text-[#FFFDD0] shadow-md shadow-[#2D5A27]/20 transition active:bg-[#24481f]"
             >
               Start finding wait times
             </motion.button>
@@ -118,17 +105,16 @@ export function MobileAppShell() {
   }
 
   return (
-    <div className="mobile-app-shell min-h-screen flex flex-col bg-white">
-      {/* Content Area — no top marketing bar; safe area for notch / home indicator */}
+    <div className="mobile-app-shell flex min-h-dvh flex-col bg-white">
+      {/* Content Area — min-h-0 so flex + overflow-y-auto can scroll on real devices */}
       <main
-        className="flex-1 overflow-y-auto overflow-x-hidden pt-[env(safe-area-inset-top)]"
+        className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto pt-[env(safe-area-inset-top)]"
         style={{
           paddingBottom: contentPaddingBottom,
-          minHeight: '100dvh',
         }}
       >
         {activeTab === 'home' && (
-          <div className="bg-white px-4 pt-4">
+          <div className="flex-1 bg-white px-4 pt-4">
             <WaitTimesSection
               waitTimes={waitTimes}
               getStatusFromWaitTime={getStatusFromWaitTime}
@@ -142,7 +128,7 @@ export function MobileAppShell() {
         )}
 
         {activeTab === 'courts' && (
-          <div className="px-4 py-6">
+          <div className="flex-1 px-4 py-6">
             <CourtFinderSection
               selectedBoroughs={selectedBoroughs}
               selectedSurfaces={selectedSurfaces}
@@ -169,8 +155,14 @@ export function MobileAppShell() {
           </div>
         )}
 
+        {activeTab === 'sheets' && (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <SignupSheetsPanel />
+          </div>
+        )}
+
         {activeTab === 'map' && (
-          <div className="px-4 py-4">
+          <div className="flex-1 px-4 py-4">
             <CourtFinderSection
               selectedBoroughs={selectedBoroughs}
               selectedSurfaces={selectedSurfaces}
@@ -199,7 +191,7 @@ export function MobileAppShell() {
         )}
 
         {activeTab === 'more' && (
-          <div className="px-4 py-6">
+          <div className="flex-1 px-4 py-6">
             <MoreSection isMobile />
           </div>
         )}

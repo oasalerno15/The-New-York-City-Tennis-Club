@@ -62,7 +62,7 @@ function QAItem({
         <div className="flex items-center justify-between">
           <h3
             className={`text-xl md:text-2xl font-semibold transition-colors duration-300 ${
-              isOpen ? 'text-green-600' : 'text-gray-800'
+              isOpen ? 'text-[#2D5A27]' : 'text-[#1A1A1A]'
             }`}
           >
             {qa.question}
@@ -95,7 +95,7 @@ function QAItem({
             className="overflow-hidden"
           >
             <div className="pb-4">
-              <p className="text-gray-700 leading-relaxed text-base md:text-lg">{qa.answer}</p>
+              <p className="text-[#1A1A1A]/85 leading-relaxed text-base md:text-lg">{qa.answer}</p>
             </div>
           </motion.div>
         )}
@@ -127,7 +127,7 @@ export function MoreSection({ isMobile = false }: MoreSectionProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-16 text-black text-center"
           >
-            NYC Tennis 101
+            SmartCourt NYC 101
           </motion.h2>
 
           <div className="space-y-8">
@@ -141,10 +141,10 @@ export function MoreSection({ isMobile = false }: MoreSectionProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 1.0 }}
-            className="text-center text-gray-600 mt-16 text-lg"
+            className="text-center text-[#1A1A1A]/75 mt-16 text-lg"
           >
             For specific court details, rules, and permit enforcement, always check our{' '}
-            <span className="text-[#1B3A2E] font-semibold">Court Finder</span> above.
+            <span className="text-[#2D5A27] font-semibold">Court Finder</span> above.
           </motion.p>
         </div>
       </motion.div>
@@ -155,80 +155,27 @@ export function MoreSection({ isMobile = false }: MoreSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="mt-16 md:mt-24 py-16 md:py-20 bg-white"
+        className="mt-16 md:mt-24 py-16 md:py-20 bg-[#FFFDD0]"
       >
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-8 md:gap-12 items-center">
+          <div className="flex items-center justify-center">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="lg:w-2/5 space-y-6 md:space-y-8"
+              className="w-full max-w-4xl"
             >
               <motion.h2
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight"
+                className="text-center text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A1A] leading-tight"
               >
                 Tennis convenience starts here
               </motion.h2>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="text-xl text-gray-600 leading-relaxed"
-              >
-                Mobile app coming soon
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                className="space-y-4"
-              >
-                {['Find courts instantly', 'Real-time wait times', 'Never guess again'].map(
-                  (item, i) => (
-                    <div key={i} className="flex items-center space-x-3 min-h-[44px]">
-                      <div className="w-6 h-6 bg-[#1B3A2E] rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg
-                          className="w-4 h-4 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-lg text-gray-700 font-medium">{item}</span>
-                    </div>
-                  )
-                )}
-              </motion.div>
             </motion.div>
-
-            {!isMobile && (
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="lg:w-3/5 flex justify-center"
-              >
-                <div className="w-full h-[400px] md:h-[600px] relative bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
-                  <p className="text-center">Video placeholder</p>
-                </div>
-              </motion.div>
-            )}
           </div>
         </div>
       </motion.div>
