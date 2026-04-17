@@ -311,10 +311,20 @@ const ScrollExpandMedia = ({
           </motion.div>
 
           <div className='container mx-auto flex flex-col items-center justify-start relative z-10'>
-            <div className={`flex w-full min-h-[100dvh] flex-col items-center relative pb-2 md:pb-3 ${isLight ? 'pt-[max(0rem,env(safe-area-inset-top))] md:pt-0' : 'pt-[max(0.75rem,env(safe-area-inset-top))] md:pt-8'}`}>
+            <div
+              className={`relative flex w-full min-h-[100dvh] flex-col items-center ${
+                isDesktopLight
+                  ? 'justify-center gap-2 px-4 pt-[max(0.25rem,env(safe-area-inset-top))] pb-[max(0.35rem,env(safe-area-inset-bottom))] md:gap-2.5 md:pt-2 md:pb-3'
+                  : `justify-start pb-2 md:pb-3 ${isLight ? 'pt-[max(0rem,env(safe-area-inset-top))] md:pt-0' : 'pt-[max(0.75rem,env(safe-area-inset-top))] md:pt-8'}`
+              }`}
+            >
               {heroTitle ? (
                 <h1
-                  className={`relative z-10 mx-auto mb-4 max-w-[min(100%,40rem)] px-4 text-center text-[clamp(1.65rem,3.8vw,2.75rem)] font-semibold leading-[1.1] tracking-[0.02em] md:mb-5 ${isLight ? 'text-[#2D5A27]' : 'text-white'}`}
+                  className={`relative z-10 mx-auto max-w-[min(100%,40rem)] px-4 text-center text-[clamp(1.65rem,3.8vw,2.75rem)] font-semibold leading-[1.1] tracking-[0.02em] ${
+                    isDesktopLight
+                      ? 'mb-1.5 text-[#2D5A27] md:mb-2'
+                      : `mb-4 md:mb-5 ${isLight ? 'text-[#2D5A27]' : 'text-white'}`
+                  }`}
                   style={{
                     fontFamily: 'var(--font-display-serif), Georgia, serif',
                     ...(isLight
@@ -332,19 +342,23 @@ const ScrollExpandMedia = ({
               <div
                 className={`relative z-0 flex min-h-0 w-full justify-center ${
                   isDesktopLight
-                    ? 'flex flex-1 flex-col items-center justify-start pt-0'
+                    ? 'flex flex-col items-center pt-0'
                     : isLight
                       ? 'flex-1 items-start pt-0'
                       : 'flex-1 items-center pt-8 md:pt-14 lg:pt-16'
                 }`}
               >
                 <div
-                  className='relative transition-none rounded-2xl'
+                  className='relative overflow-hidden rounded-2xl bg-black transition-none'
                   style={{
                     width: `${mediaWidth}px`,
                     height: `${mediaHeight}px`,
                     maxWidth: isLight ? '97vw' : '95vw',
-                    maxHeight: isLight ? 'min(62vh, calc(100dvh - 11rem))' : 'min(85vh, calc(100dvh - 14rem))',
+                    maxHeight: isDesktopLight
+                      ? 'min(48vh, calc(100dvh - 7.25rem))'
+                      : isLight
+                        ? 'min(62vh, calc(100dvh - 11rem))'
+                        : 'min(85vh, calc(100dvh - 14rem))',
                     boxShadow: isLight
                       ? '0 32px 64px -16px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.06)'
                       : '0 28px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.12), 0 0 48px rgba(255,255,255,0.06)',
@@ -468,9 +482,7 @@ const ScrollExpandMedia = ({
                 )}
                 </div>
                 {isDesktopLight
-                  ? renderScrollExpandHint(
-                      'mt-5 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:mt-7'
-                    )
+                  ? renderScrollExpandHint('mt-2 shrink-0 md:mt-2.5')
                   : null}
               </div>
 

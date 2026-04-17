@@ -95,7 +95,7 @@ export function WaitTimesSection({
             {COURT_NAMES.map((courtName) => (
               <div
                 key={courtName}
-                className="bg-[#FFFDD0] border-2 border-[#2D5A27] rounded-lg p-4 hover:shadow-lg transition-all duration-300 min-h-[44px]"
+                className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md min-h-[44px]"
               >
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
@@ -110,7 +110,7 @@ export function WaitTimesSection({
                 <div className="space-y-3">
                   <div className="flex gap-2 flex-wrap">
                     <select
-                      className="flex-1 min-w-0 px-2 py-2 border-2 border-[#2D5A27] rounded-lg bg-[#FFFDD0] text-sm text-[#1A1A1A] focus:outline-none focus:border-[#2D5A27] focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20 min-h-[44px]"
+                      className="min-h-[44px] flex-1 min-w-0 rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-2 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20"
                       defaultValue={waitTimes[courtName]?.wait_time || 'Select wait time...'}
                       ref={refs[courtName].select}
                     >
@@ -147,7 +147,7 @@ export function WaitTimesSection({
                   <input
                     type="text"
                     placeholder="Leave a comment about the wait time..."
-                    className="w-full px-3 py-2 border-2 border-[#2D5A27] rounded-lg bg-[#FFFDD0] text-sm text-[#1A1A1A] focus:outline-none focus:border-[#2D5A27] focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20 min-h-[44px]"
+                    className="min-h-[44px] w-full rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-3 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20"
                     ref={refs[courtName].comment}
                   />
                 </div>
@@ -177,7 +177,7 @@ export function WaitTimesSection({
             {COURT_NAMES.map((courtName) => (
               <div
                 key={courtName}
-                className="bg-[#FFFDD0] border-2 border-[#2D5A27] rounded-lg p-4 hover:shadow-lg transition-all duration-300"
+                className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
               >
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>

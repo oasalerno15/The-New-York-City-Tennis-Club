@@ -20,22 +20,52 @@ function emptyLatestMap(): Record<string, SignupSheetReport | null> {
   >;
 }
 
-async function uploadSignupPhoto(file: File): Promise<string | null> {
-  if (!supabase) return null;
-  const rawExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const ext = ['jpg', 'jpeg', 'png', 'webp', 'heic'].includes(rawExt) ? rawExt : 'jpg';
-  const path = `${crypto.randomUUID()}.${ext}`;
+/** `crypto.randomUUID()` is not available on non-secure origins (e.g. http:// phone-on-LAN). */
+function newStorageObjectId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function inferImageContentType(file: File): string {
+  if (file.type && file.type.startsWith('image/')) return file.type;
+  const n = file.name.toLowerCase();
+  if (n.endsWith('.heic') || n.endsWith('.heif')) return 'image/heic';
+  if (n.endsWith('.png')) return 'image/png';
+  if (n.endsWith('.webp')) return 'image/webp';
+  if (n.endsWith('.gif')) return 'image/gif';
+  if (n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'image/jpeg';
+  return 'image/jpeg';
+}
+
+function extForStoragePath(file: File): string {
+  const t = inferImageContentType(file);
+  if (t === 'image/png') return 'png';
+  if (t === 'image/webp') return 'webp';
+  if (t === 'image/heic' || t === 'image/heif') return 'heic';
+  if (t === 'image/gif') return 'gif';
+  return 'jpg';
+}
+
+type UploadPhotoResult = { url: string | null; error?: string };
+
+async function uploadSignupPhoto(file: File): Promise<UploadPhotoResult> {
+  if (!supabase) return { url: null, error: 'Supabase is not configured' };
+  const ext = extForStoragePath(file);
+  const path = `${newStorageObjectId()}.${ext}`;
+  const contentType = inferImageContentType(file);
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
     cacheControl: '3600',
     upsert: false,
-    contentType: file.type || 'image/jpeg',
+    contentType,
   });
   if (error) {
     console.warn('signup photo upload:', error.message);
-    return null;
+    return { url: null, error: error.message };
   }
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  return { url: data.publicUrl };
 }
 
 export function useSignupSheetReports() {
@@ -103,7 +133,19 @@ export function useSignupSheetReports() {
       try {
         let photoUrl: string | null = null;
         if (photo && photo.size > 0) {
-          photoUrl = await uploadSignupPhoto(photo);
+          const uploaded = await uploadSignupPhoto(photo);
+          if (uploaded.url) {
+            photoUrl = uploaded.url;
+          } else if (uploaded.error) {
+            const submitWithout =
+              typeof window !== 'undefined' &&
+              window.confirm(
+                `Photo didn’t upload (${uploaded.error}). Submit this report without a photo?`
+              );
+            if (!submitWithout) {
+              return false;
+            }
+          }
         }
         const expiresAt = new Date(Date.now() + HOURS_MS).toISOString();
         const { error } = await supabase.from(TABLE).insert({

@@ -399,7 +399,11 @@ export function CourtFinderSection({
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="bg-[#FFFDD0] rounded-lg p-2 md:p-4 shadow-lg"
+          className={
+            isMobile
+              ? 'rounded-lg border border-[#2D5A27]/25 bg-white/40 p-2 shadow-md backdrop-blur-sm md:p-4'
+              : 'rounded-lg bg-[#FFFDD0] p-2 shadow-lg md:p-4'
+          }
         >
           {loading ? (
             <motion.div

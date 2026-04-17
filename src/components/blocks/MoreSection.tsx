@@ -155,7 +155,11 @@ export function MoreSection({ isMobile = false }: MoreSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="mt-16 md:mt-24 py-16 md:py-20 bg-[#FFFDD0]"
+        className={
+          isMobile
+            ? 'mt-16 border-t border-[#2D5A27]/15 bg-transparent py-16 md:mt-24 md:py-20'
+            : 'mt-16 bg-[#FFFDD0] py-16 md:mt-24 md:py-20'
+        }
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-center">

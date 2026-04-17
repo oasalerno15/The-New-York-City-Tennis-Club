@@ -138,7 +138,7 @@ export function SignupSheetsPanel() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#FFFDD0]">
+    <div className="flex min-h-0 flex-1 flex-col bg-white">
       <AnimatePresence mode="wait">
         {view === 'list' && (
           <motion.div
@@ -177,7 +177,7 @@ export function SignupSheetsPanel() {
                 <button
                   type="button"
                   onClick={() => refresh()}
-                  className="mb-2 w-full rounded-xl border border-[#2D5A27]/20 bg-[#FFFDD0] py-2 text-sm font-medium text-[#2D5A27] shadow-sm active:bg-[#f6f3cd]"
+                  className="mb-2 w-full rounded-xl border border-[#2D5A27]/30 bg-white/60 py-2 text-sm font-medium text-[#2D5A27] shadow-sm backdrop-blur-sm active:bg-[#2D5A27]/5"
                 >
                   Refresh
                 </button>
@@ -188,7 +188,7 @@ export function SignupSheetsPanel() {
                 return (
                   <div
                     key={borough}
-                    className="overflow-hidden rounded-xl border-2 border-[#2D5A27] bg-[#FFFDD0] shadow-sm"
+                    className="overflow-hidden rounded-xl border-2 border-[#2D5A27]/35 bg-white/50 shadow-sm backdrop-blur-sm"
                   >
                     <button
                       type="button"
@@ -260,7 +260,7 @@ export function SignupSheetsPanel() {
           >
             <SubHeader title={selected.name} />
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
-              <div className="rounded-xl border-2 border-[#2D5A27] bg-[#FFFDD0] p-4 shadow-sm">
+              <div className="rounded-xl border-2 border-[#2D5A27]/35 bg-white/50 p-4 shadow-sm backdrop-blur-sm">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                     Current status
@@ -288,7 +288,7 @@ export function SignupSheetsPanel() {
                       <button
                         type="button"
                         onClick={() => setLightboxUrl(reportForSelected.photo_url)}
-                        className="mt-4 block w-full overflow-hidden rounded-lg border border-[#2D5A27]/15 bg-[#f8f6d8] focus:outline-none focus:ring-2 focus:ring-[#2D5A27]"
+                        className="mt-4 block w-full overflow-hidden rounded-lg border border-[#2D5A27]/25 bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#2D5A27] backdrop-blur-sm"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -360,7 +360,7 @@ export function SignupSheetsPanel() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2D5A27]/40 bg-[#FFFDD0] py-4 text-base font-medium text-[#2D5A27] active:bg-[#f6f3cd]"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2D5A27]/35 bg-white/55 py-4 text-base font-medium text-[#2D5A27] backdrop-blur-sm active:bg-[#2D5A27]/5"
               >
                 <Camera className="h-5 w-5" />
                 Photo (optional)
