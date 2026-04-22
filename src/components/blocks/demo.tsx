@@ -5,6 +5,7 @@ import { Wrapper, Status } from '@googlemaps/react-wrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
 import { MobileAppShell } from '@/components/mobile/MobileAppShell';
+import { SignupSheetsPanel } from '@/components/mobile/signup-sheets/SignupSheetsPanel';
 import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supabase';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 
@@ -1596,6 +1597,30 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Sign-up Sheets Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className='mb-16 md:mb-24'
+        >
+          <motion.h2
+            id="sign-up-sheets"
+            className='text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-8 md:mb-12 text-black dark:text-white'
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Sign-up Sheets
+          </motion.h2>
+          <div className='bg-white rounded-lg p-2 md:p-4 shadow-lg'>
+            <div className='mx-auto w-full max-w-4xl rounded-lg border-2 border-[#1e3a5f]/20 bg-white'>
+              <SignupSheetsPanel />
+            </div>
           </div>
         </motion.section>
 
