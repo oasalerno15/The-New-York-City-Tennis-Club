@@ -60,50 +60,6 @@ export function MobileAppShell() {
     );
   }
 
-  if (!hasEnteredApp) {
-    return (
-      <div
-        className="mobile-app-shell min-h-dvh flex flex-col bg-white text-[#1A1A1A]"
-        style={{
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
-      >
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto bg-white px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center space-y-5 text-center"
-          >
-            <h1
-              className="w-full text-[clamp(1.5rem,5.2vw,1.9rem)] font-semibold leading-tight tracking-[0.02em] text-[#2D5A27]"
-              style={{ fontFamily: 'var(--font-display-serif), Georgia, serif' }}
-            >
-              SmartCourtNYC
-            </h1>
-            <div className="flex flex-col space-y-3 text-[#1A1A1A]">
-              <p className="text-lg font-semibold leading-snug text-balance sm:text-xl">
-                Live wait times, real courts
-              </p>
-              <p className="text-sm leading-relaxed text-[#1A1A1A]/80 sm:text-[0.9375rem]">
-                See what players are reporting and share what you see before you head out.
-              </p>
-            </div>
-            <motion.button
-              type="button"
-              onClick={enterApp}
-              whileTap={{ scale: 0.98 }}
-              className="mt-4 w-full rounded-xl bg-[#2D5A27] px-4 py-4 text-base font-semibold text-[#FFFDD0] shadow-md shadow-[#2D5A27]/20 transition active:bg-[#24481f]"
-            >
-              Start finding wait times
-            </motion.button>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="mobile-app-shell flex min-h-dvh flex-col bg-white">
       {/* Content Area — min-h-0 so flex + overflow-y-auto can scroll on real devices */}
@@ -113,7 +69,41 @@ export function MobileAppShell() {
           paddingBottom: contentPaddingBottom,
         }}
       >
-        {activeTab === 'home' && (
+        {!hasEnteredApp && (
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto bg-white px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] text-[#1A1A1A]">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center space-y-5 text-center"
+            >
+              <h1
+                className="w-full text-[clamp(1.5rem,5.2vw,1.9rem)] font-semibold leading-tight tracking-[0.02em] text-[#2D5A27]"
+                style={{ fontFamily: 'var(--font-display-serif), Georgia, serif' }}
+              >
+                SmartCourtNYC
+              </h1>
+              <div className="flex flex-col space-y-3 text-[#1A1A1A]">
+                <p className="text-lg font-semibold leading-snug text-balance sm:text-xl">
+                  Live wait times, real courts
+                </p>
+                <p className="text-sm leading-relaxed text-[#1A1A1A]/80 sm:text-[0.9375rem]">
+                  See what players are reporting and share what you see before you head out.
+                </p>
+              </div>
+              <motion.button
+                type="button"
+                onClick={enterApp}
+                whileTap={{ scale: 0.98 }}
+                className="mt-4 w-full rounded-xl bg-[#2D5A27] px-4 py-4 text-base font-semibold text-[#FFFDD0] shadow-md shadow-[#2D5A27]/20 transition active:bg-[#24481f]"
+              >
+                Start finding wait times
+              </motion.button>
+            </motion.div>
+          </div>
+        )}
+
+        {hasEnteredApp && activeTab === 'home' && (
           <div className="flex-1 bg-white px-4 pt-4">
             <WaitTimesSection
               waitTimes={waitTimes}
@@ -127,7 +117,7 @@ export function MobileAppShell() {
           </div>
         )}
 
-        {activeTab === 'courts' && (
+        {hasEnteredApp && activeTab === 'courts' && (
           <div className="flex-1 px-4 py-6">
             <CourtFinderSection
               selectedBoroughs={selectedBoroughs}
@@ -155,13 +145,13 @@ export function MobileAppShell() {
           </div>
         )}
 
-        {activeTab === 'sheets' && (
+        {hasEnteredApp && activeTab === 'sheets' && (
           <div className="flex min-h-0 flex-1 flex-col">
             <SignupSheetsPanel />
           </div>
         )}
 
-        {activeTab === 'map' && (
+        {hasEnteredApp && activeTab === 'map' && (
           <div className="flex-1 px-4 py-4">
             <CourtFinderSection
               selectedBoroughs={selectedBoroughs}
@@ -190,14 +180,14 @@ export function MobileAppShell() {
           </div>
         )}
 
-        {activeTab === 'more' && (
+        {hasEnteredApp && activeTab === 'more' && (
           <div className="flex-1 px-4 py-6">
             <MoreSection isMobile />
           </div>
         )}
       </main>
 
-      <MobileTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      {hasEnteredApp && <MobileTabBar activeTab={activeTab} onTabChange={setActiveTab} />}
     </div>
   );
 }

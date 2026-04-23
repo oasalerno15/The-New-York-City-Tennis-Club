@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronLeft,
+  CornerUpLeft,
   ChevronDown,
   ChevronRight,
   Camera,
@@ -38,8 +38,15 @@ function formatReportTime(iso: string): string {
 type View = 'list' | 'detail' | 'report';
 
 export function SignupSheetsPanel() {
-  const { latestByCourt, loading, submitting, configured, submitReport, refresh } =
-    useSignupSheetReports();
+  const {
+    latestByCourt,
+    loading,
+    submitting,
+    submitError,
+    configured,
+    submitReport,
+    refresh,
+  } = useSignupSheetReports();
   const [view, setView] = useState<View>('list');
   const [selected, setSelected] = useState<SignupSheetCourt | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -122,10 +129,10 @@ export function SignupSheetsPanel() {
         <button
           type="button"
           onClick={goBack}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 active:bg-white/20"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#2D5A27] shadow-sm active:bg-white/90"
           aria-label="Back"
         >
-          <ChevronLeft className="h-6 w-6" />
+          <CornerUpLeft className="h-5 w-5" />
         </button>
         <h1
           className="min-w-0 flex-1 text-base font-semibold leading-tight tracking-wide"
@@ -170,6 +177,14 @@ export function SignupSheetsPanel() {
             </div>
 
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4 pb-6">
+              {submitError ? (
+                <p
+                  role="alert"
+                  className="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-snug text-amber-950"
+                >
+                  {submitError}
+                </p>
+              ) : null}
               {loading && (
                 <p className="text-center text-sm text-gray-500">Loading reports…</p>
               )}
@@ -260,6 +275,14 @@ export function SignupSheetsPanel() {
           >
             <SubHeader title={selected.name} />
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+              {submitError ? (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-snug text-amber-950"
+                >
+                  {submitError}
+                </p>
+              ) : null}
               <div className="rounded-xl border-2 border-[#2D5A27]/35 bg-white/50 p-4 shadow-sm backdrop-blur-sm">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -331,6 +354,14 @@ export function SignupSheetsPanel() {
           >
             <SubHeader title="Report status" />
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-8">
+              {submitError ? (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-snug text-amber-950"
+                >
+                  {submitError}
+                </p>
+              ) : null}
               <p className="text-sm text-gray-600">{selected.name}</p>
               <div className="space-y-3">
                 {SIGNUP_SHEET_STATUS_ORDER.map((st) => (

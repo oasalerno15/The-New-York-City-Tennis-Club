@@ -21,9 +21,40 @@ const displaySerif = Cormorant_Garamond({
   display: "swap",
 });
 
+const siteDescription =
+  "Know before you go. Real-time wait times and court info for NYC public tennis courts.";
+
+const metadataBase = new URL(
+  process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+);
+
 export const metadata: Metadata = {
-  title: "SmartCourt NYC - Live Wait Times",
-  description: "SmartCourt NYC helps you find real-time wait times and court availability across NYC's tennis facilities, so you spend less time waiting and more time playing.",
+  metadataBase,
+  applicationName: "SmartCourt NYC",
+  title: {
+    default: "SmartCourt NYC",
+    template: "%s · SmartCourt NYC",
+  },
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    siteName: "SmartCourt NYC",
+    title: "SmartCourt NYC",
+    description: siteDescription,
+    images: [
+      {
+        url: "/smartcourtnyc-og.png",
+        alt: "SmartCourt NYC",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SmartCourt NYC",
+    description: siteDescription,
+    images: ["/smartcourtnyc-og.png"],
+  },
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
 };
 

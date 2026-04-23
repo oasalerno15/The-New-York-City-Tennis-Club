@@ -52,19 +52,32 @@ type UploadPhotoResult = { url: string | null; error?: string };
 
 async function uploadSignupPhoto(file: File): Promise<UploadPhotoResult> {
   if (!supabase) return { url: null, error: 'Supabase is not configured' };
+  const sb = supabase;
   const ext = extForStoragePath(file);
-  const path = `${newStorageObjectId()}.${ext}`;
   const contentType = inferImageContentType(file);
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-    cacheControl: '3600',
-    upsert: false,
-    contentType,
-  });
+  /** Some mobile browsers stream `File` poorly; `Blob` upload is more reliable. */
+  const body = new Blob([await file.arrayBuffer()], { type: contentType });
+
+  const tryUpload = async (path: string, declaredType: string) =>
+    sb.storage.from(BUCKET).upload(path, body, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: declaredType,
+    });
+
+  let path = `${newStorageObjectId()}.${ext}`;
+  let { error } = await tryUpload(path, contentType);
+
   if (error) {
-    console.warn('signup photo upload:', error.message);
+    path = `${newStorageObjectId()}.${ext}`;
+    ({ error } = await tryUpload(path, 'application/octet-stream'));
+  }
+
+  if (error) {
+    console.warn('signup photo upload:', error.message, error);
     return { url: null, error: error.message };
   }
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  const { data } = sb.storage.from(BUCKET).getPublicUrl(path);
   return { url: data.publicUrl };
 }
 
@@ -130,6 +143,7 @@ export function useSignupSheetReports() {
       }
       setSubmitting(true);
       setSubmitError(null);
+      let photoUploadFailure: string | null = null;
       try {
         let photoUrl: string | null = null;
         if (photo && photo.size > 0) {
@@ -137,29 +151,34 @@ export function useSignupSheetReports() {
           if (uploaded.url) {
             photoUrl = uploaded.url;
           } else if (uploaded.error) {
-            const submitWithout =
-              typeof window !== 'undefined' &&
-              window.confirm(
-                `Photo didn’t upload (${uploaded.error}). Submit this report without a photo?`
-              );
-            if (!submitWithout) {
-              return false;
-            }
+            photoUploadFailure = uploaded.error;
           }
         }
         const expiresAt = new Date(Date.now() + HOURS_MS).toISOString();
-        const { error } = await supabase.from(TABLE).insert({
+        const row: Record<string, unknown> = {
           court_name: courtName,
           borough,
           status,
-          photo_url: photoUrl,
           expires_at: expiresAt,
-        });
+        };
+        if (photoUrl) row.photo_url = photoUrl;
+        const { error } = await supabase.from(TABLE).insert(row);
         if (error) throw error;
         await refresh();
+        if (photoUploadFailure) {
+          setSubmitError(
+            `Report saved without a photo (${photoUploadFailure}). In Supabase: create public bucket "${BUCKET}" and run the storage policies in supabase/signup_sheet_reports.sql.`
+          );
+        }
         return true;
       } catch (e) {
-        const msg = formatSupabaseError(e);
+        let msg = formatSupabaseError(e);
+        if (/schema cache|does not exist|relation/i.test(msg)) {
+          msg += ` — Run the SQL in supabase/signup_sheet_reports.sql in the Supabase SQL editor (table "${TABLE}").`;
+        }
+        if (/row-level security|RLS/i.test(msg)) {
+          msg += ` — Add the insert/select RLS policies from supabase/signup_sheet_reports.sql.`;
+        }
         setSubmitError(msg);
         alert(`Could not submit report. ${msg}`);
         return false;

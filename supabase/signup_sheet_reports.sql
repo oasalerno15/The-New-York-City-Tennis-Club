@@ -1,6 +1,7 @@
 -- =============================================================================
 -- Sign Up Sheets feature: table + RLS + Storage bucket policies
--- Run in Supabase SQL Editor (or via migration). Adjust if your project uses a custom schema.
+-- Run the full script in the Supabase SQL Editor (Dashboard → SQL).
+-- Safe to re-run: drops and recreates policies by name.
 -- =============================================================================
 
 -- 1) Table -------------------------------------------------------------------
@@ -28,41 +29,35 @@ comment on table public.signup_sheet_reports is
 -- 2) Row Level Security ------------------------------------------------------
 alter table public.signup_sheet_reports enable row level security;
 
--- Anyone can read non-expired rows (optional: remove time check and filter in app only)
+drop policy if exists "signup_sheet_reports_select_public" on public.signup_sheet_reports;
 create policy "signup_sheet_reports_select_public"
   on public.signup_sheet_reports
   for select
   to anon, authenticated
   using (expires_at > now());
 
--- Anonymous inserts (no login) — matches frictonless mobile reporting
+drop policy if exists "signup_sheet_reports_insert_anon" on public.signup_sheet_reports;
 create policy "signup_sheet_reports_insert_anon"
   on public.signup_sheet_reports
   for insert
   to anon, authenticated
   with check (true);
 
--- No updates/deletes from clients (optional cleanup via service role cron)
--- create policy ... for delete to service_role only (manage in Dashboard if needed)
-
 -- 3) Storage bucket -----------------------------------------------------------
 insert into storage.buckets (id, name, public)
 values ('signup-sheet-photos', 'signup-sheet-photos', true)
 on conflict (id) do update set public = excluded.public;
 
--- Read objects in this bucket (public bucket + policy)
+drop policy if exists "signup_photos_select_anon" on storage.objects;
 create policy "signup_photos_select_anon"
   on storage.objects
   for select
   to anon, authenticated
   using (bucket_id = 'signup-sheet-photos');
 
--- Anonymous uploads (keep simple; optional: add file size / mime checks)
+drop policy if exists "signup_photos_insert_anon" on storage.objects;
 create policy "signup_photos_insert_anon"
   on storage.objects
   for insert
   to anon, authenticated
   with check (bucket_id = 'signup-sheet-photos');
-
--- Optional: allow users to replace own objects — not needed for one-shot uploads
--- Optional: tighten with (storage.extension(name) in ('jpg','jpeg','png','webp'))

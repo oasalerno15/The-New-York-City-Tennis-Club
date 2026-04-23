@@ -34,14 +34,24 @@ export interface SignupSheetReport {
   expires_at: string
 }
 
-/** Postgrest errors are plain objects, not always `Error`. */
+/** Postgrest / Storage errors are plain objects, not always `Error`. */
 export function formatSupabaseError(err: unknown): string {
   if (err && typeof err === 'object') {
-    const e = err as { message?: string; details?: string; hint?: string }
+    const e = err as {
+      message?: string
+      details?: string
+      hint?: string
+      code?: string
+      statusCode?: string
+    }
     const parts = [e.message, e.details, e.hint].filter(
       (x): x is string => typeof x === 'string' && x.length > 0
     )
-    if (parts.length) return parts.join(' — ')
+    if (parts.length) {
+      const head = parts.join(' — ')
+      const code = typeof e.code === 'string' && e.code.length > 0 ? ` [${e.code}]` : ''
+      return head + code
+    }
   }
   if (err instanceof Error) return err.message
   return typeof err === 'string' ? err : 'Unknown error'
