@@ -108,12 +108,14 @@ export function useWaitTimes() {
     try {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-      const { error } = await supabase.from('wait_times').insert({
-        court_name: courtName,
-        wait_time: waitTime,
-        comment: comment || '',
-        expires_at: expiresAt.toISOString(),
-      });
+     const { error } = await supabase.from('wait_times').insert({
+  court_name: courtName,
+  wait_time: waitTime,
+  comment: comment || '',
+  expires_at: expiresAt.toISOString(),
+  hour_of_day: now.getHours(),
+  day_of_week: now.getDay(),
+});
       if (error) throw error;
       setReportSuccess(courtName);
       setTimeout(() => setReportSuccess(null), 3000);
