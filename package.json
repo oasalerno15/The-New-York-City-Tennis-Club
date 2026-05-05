@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
+    "dev:webpack": "next dev --port 3000",
     "dev:3010": "next dev --turbopack --port 3010",
     "dev-chrome": "./start-chrome.sh",
     "dev-auto": "npm run dev & sleep 5 && open -a 'Google Chrome' http://localhost:3000",

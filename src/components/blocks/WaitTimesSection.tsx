@@ -1,8 +1,10 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useLayoutEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { WaitTime } from '@/lib/supabase';
+
+type MobileWaitTab = 'report' | 'live';
 
 interface WaitTimesSectionProps {
   waitTimes: { [key: string]: WaitTime | null };
@@ -30,6 +32,18 @@ export function WaitTimesSection({
   reporting,
   reportSuccess,
 }: WaitTimesSectionProps) {
+  const [mobileTab, setMobileTab] = useState<MobileWaitTab>('report');
+  /** Avoid duplicate ref targets (mobile vs desktop); measure once before paint. */
+  const [useTabbedMobileLayout, setUseTabbedMobileLayout] = useState(true);
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => setUseTabbedMobileLayout(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
   const hudsonSelectRef = useRef<HTMLSelectElement>(null);
   const hudsonCommentRef = useRef<HTMLInputElement>(null);
   const pierSelectRef = useRef<HTMLSelectElement>(null);
@@ -73,44 +87,75 @@ export function WaitTimesSection({
         SmartCourt NYC — Live Status
       </motion.h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16">
-        {/* Report Wait Time - Left Side */}
-        <motion.div
-          className="space-y-4 md:space-y-6"
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white">
-              Report Wait Time
-            </h3>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full live-dot" />
-              <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
+      {useTabbedMobileLayout ? (
+        <>
+          <div className="mb-4">
+            <div
+              role="tablist"
+              aria-label="Wait times"
+              className="flex overflow-hidden rounded-lg border-2 border-[#2D5A27]/35"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileTab === 'report'}
+                aria-controls="wait-panel-report"
+                id="wait-tab-report"
+                tabIndex={mobileTab === 'report' ? 0 : -1}
+                onClick={() => setMobileTab('report')}
+                className={`min-h-[48px] flex-1 px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
+                  mobileTab === 'report'
+                    ? 'bg-[#1a3d1f] text-white'
+                    : 'bg-white text-gray-500'
+                }`}
+              >
+                Report Wait Time
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileTab === 'live'}
+                aria-controls="wait-panel-live"
+                id="wait-tab-live"
+                tabIndex={mobileTab === 'live' ? 0 : -1}
+                onClick={() => setMobileTab('live')}
+                className={`min-h-[48px] flex-1 px-2 py-2.5 text-center text-sm font-semibold transition-colors ${
+                  mobileTab === 'live'
+                    ? 'bg-[#1a3d1f] text-white'
+                    : 'bg-white text-gray-500'
+                }`}
+              >
+                Live Updates
+              </button>
             </div>
           </div>
 
-          <div className="space-y-4">
-            {COURT_NAMES.map((courtName) => (
-              <div
-                key={courtName}
-                className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md min-h-[44px]"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
-                  <div
-                    className={`w-3 h-3 min-w-[12px] min-h-[12px] ${
-                      waitTimes[courtName]
-                        ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
-                        : 'bg-gray-500'
-                    } rounded-full`}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex gap-2 flex-wrap">
+          <div
+            id="wait-panel-report"
+            role="tabpanel"
+            aria-labelledby="wait-tab-report"
+            hidden={mobileTab !== 'report'}
+            className="space-y-4"
+          >
+            {mobileTab === 'report' &&
+              COURT_NAMES.map((courtName) => (
+                <div
+                  key={courtName}
+                  className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
+                    <div
+                      className={`w-3 h-3 min-w-[12px] min-h-[12px] ${
+                        waitTimes[courtName]
+                          ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
+                          : 'bg-gray-500'
+                      } rounded-full`}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
                     <select
-                      className="min-h-[44px] flex-1 min-w-0 rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-2 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20"
+                      className="min-h-[44px] w-full rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-2 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20"
                       defaultValue={waitTimes[courtName]?.wait_time || 'Select wait time...'}
                       ref={refs[courtName].select}
                     >
@@ -120,7 +165,14 @@ export function WaitTimesSection({
                       <option value="2-3 hours">2-3 hours</option>
                       <option value="More than 3 hours">More than 3 hours</option>
                     </select>
+                    <input
+                      type="text"
+                      placeholder="e.g. 6 rackets on fence, or 6 benches filled"
+                      className="min-h-[36px] w-full rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-2.5 py-1.5 text-xs text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20"
+                      ref={refs[courtName].comment}
+                    />
                     <button
+                      type="button"
                       onClick={() =>
                         handleReportWaitTime(
                           courtName,
@@ -129,9 +181,143 @@ export function WaitTimesSection({
                         )
                       }
                       disabled={reporting === courtName}
-                      className={`px-2 py-2 rounded-lg font-medium transition-all duration-300 text-xs whitespace-nowrap flex-shrink-0 min-h-[44px] ${
+                      className={`min-h-[44px] w-full rounded-lg px-2 py-2 text-sm font-medium transition-all duration-300 ${
                         reporting === courtName
-                          ? 'bg-gray-400 cursor-not-allowed'
+                          ? 'cursor-not-allowed bg-gray-400 text-white'
+                          : reportSuccess === courtName
+                            ? 'bg-[#2D5A27] text-[#FFFDD0] scale-[1.02]'
+                            : 'bg-[#2D5A27] text-[#FFFDD0] hover:bg-[#24481f]'
+                      }`}
+                    >
+                      {reporting === courtName
+                        ? 'Reporting...'
+                        : reportSuccess === courtName
+                          ? '✓ Reported!'
+                          : 'Report'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          <div
+            id="wait-panel-live"
+            role="tabpanel"
+            aria-labelledby="wait-tab-live"
+            hidden={mobileTab !== 'live'}
+            className="space-y-4"
+          >
+            {mobileTab === 'live' &&
+              COURT_NAMES.map((courtName) => (
+                <div
+                  key={courtName}
+                  className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
+                    <div
+                      className={`w-3 h-3 ${
+                        waitTimes[courtName]
+                          ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
+                          : 'bg-gray-500'
+                      } rounded-full`}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {waitTimes[courtName] ? (
+                      <>
+                        <p className="text-gray-700 font-medium">
+                          {waitTimes[courtName]!.wait_time}
+                        </p>
+                        {waitTimes[courtName]!.comment &&
+                        waitTimes[courtName]!.comment!.trim() !== '' ? (
+                          <p className="text-sm italic text-gray-600">
+                            {waitTimes[courtName]!.comment}
+                          </p>
+                        ) : null}
+                        <p className="text-sm text-gray-500">
+                          Updated{' '}
+                          {formatTimeDifference(
+                            new Date(waitTimes[courtName]!.created_at).getTime()
+                          )}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 font-medium">No wait time reported</p>
+                        <p className="text-sm text-gray-400">Be the first to report!</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16">
+          <motion.div
+            className="space-y-4 md:space-y-6"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white">
+                Report Wait Time
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full live-dot" />
+                <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {COURT_NAMES.map((courtName) => (
+                <div
+                  key={courtName}
+                  className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md min-h-[44px]"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
+                    <div
+                      className={`w-3 h-3 min-w-[12px] min-h-[12px] ${
+                        waitTimes[courtName]
+                          ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
+                          : 'bg-gray-500'
+                      } rounded-full`}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:grid-rows-[auto_auto]">
+                    <select
+                      className="min-h-[44px] w-full min-w-0 rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-2 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20 md:col-start-1 md:row-start-1"
+                      defaultValue={waitTimes[courtName]?.wait_time || 'Select wait time...'}
+                      ref={refs[courtName].select}
+                    >
+                      <option value="Select wait time...">Select wait time...</option>
+                      <option value="Less than 1 hour">Less than 1 hour</option>
+                      <option value="1-2 hours">1-2 hours</option>
+                      <option value="2-3 hours">2-3 hours</option>
+                      <option value="More than 3 hours">More than 3 hours</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Leave a comment about the wait time..."
+                      className="min-h-[44px] w-full rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-3 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20 md:col-span-2 md:row-start-2"
+                      ref={refs[courtName].comment}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleReportWaitTime(
+                          courtName,
+                          refs[courtName].select.current?.value || '',
+                          refs[courtName].comment.current?.value || ''
+                        )
+                      }
+                      disabled={reporting === courtName}
+                      className={`min-h-[44px] rounded-lg px-2 py-2 text-xs font-medium transition-all duration-300 whitespace-nowrap md:col-start-2 md:row-start-1 ${
+                        reporting === courtName
+                          ? 'cursor-not-allowed bg-gray-400 text-white'
                           : reportSuccess === courtName
                             ? 'bg-[#2D5A27] text-[#FFFDD0] scale-105'
                             : 'bg-[#2D5A27] text-[#FFFDD0] hover:bg-[#24481f] hover:scale-105'
@@ -144,78 +330,75 @@ export function WaitTimesSection({
                           : 'Report'}
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Leave a comment about the wait time..."
-                    className="min-h-[44px] w-full rounded-lg border-2 border-[#2D5A27]/40 bg-white/70 px-3 py-2 text-sm text-[#1A1A1A] backdrop-blur-sm focus:border-[#2D5A27] focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:ring-opacity-20"
-                    ref={refs[courtName].comment}
-                  />
                 </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Live Updates - Right Side */}
-        <motion.div
-          className="space-y-4 md:space-y-6"
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white">
-              Live Updates
-            </h3>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full live-dot" />
-              <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
+              ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
-            {COURT_NAMES.map((courtName) => (
-              <div
-                key={courtName}
-                className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
-                  <div
-                    className={`w-3 h-3 ${
-                      waitTimes[courtName]
-                        ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
-                        : 'bg-gray-500'
-                    } rounded-full`}
-                  />
-                </div>
-                <div className="space-y-2">
-                  {waitTimes[courtName] ? (
-                    <>
-                      <p className="text-gray-700 font-medium">{waitTimes[courtName]!.wait_time}</p>
-                      <p className="text-sm text-gray-500">
-                        Updated{' '}
-                        {formatTimeDifference(new Date(waitTimes[courtName]!.created_at).getTime())}
-                      </p>
-                      {waitTimes[courtName]!.comment &&
-                      waitTimes[courtName]!.comment!.trim() !== '' ? (
-                        <p className="text-sm text-gray-600 italic">
-                          &ldquo;{waitTimes[courtName]!.comment}&rdquo;
-                        </p>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-gray-400 font-medium">No wait time reported</p>
-                      <p className="text-sm text-gray-400">Be the first to report!</p>
-                    </>
-                  )}
-                </div>
+          <motion.div
+            className="space-y-4 md:space-y-6"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white">
+                Live Updates
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full live-dot" />
+                <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
               </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
+            </div>
+
+            <div className="space-y-4">
+              {COURT_NAMES.map((courtName) => (
+                <div
+                  key={courtName}
+                  className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
+                    <div
+                      className={`w-3 h-3 ${
+                        waitTimes[courtName]
+                          ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
+                          : 'bg-gray-500'
+                      } rounded-full`}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    {waitTimes[courtName] ? (
+                      <>
+                        <p className="text-gray-700 font-medium">
+                          {waitTimes[courtName]!.wait_time}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Updated{' '}
+                          {formatTimeDifference(
+                            new Date(waitTimes[courtName]!.created_at).getTime()
+                          )}
+                        </p>
+                        {waitTimes[courtName]!.comment &&
+                        waitTimes[courtName]!.comment!.trim() !== '' ? (
+                          <p className="text-sm text-gray-600 italic">
+                            &ldquo;{waitTimes[courtName]!.comment}&rdquo;
+                          </p>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 font-medium">No wait time reported</p>
+                        <p className="text-sm text-gray-400">Be the first to report!</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.section>
   );
 }
