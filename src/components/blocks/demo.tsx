@@ -8,6 +8,7 @@ import { MobileAppShell } from '@/components/mobile/MobileAppShell';
 import { SignupSheetsPanel } from '@/components/mobile/signup-sheets/SignupSheetsPanel';
 import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supabase';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
+import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 
 
 // Interface for court data
@@ -528,6 +529,7 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
   // Initialize wait times on component mount
   useEffect(() => {
+    ensureSmartcourtDeviceIdOnPageLoad();
     loadWaitTimes();
     cleanupExpiredWaitTimes(); // Clean up old data
   }, []);
@@ -644,7 +646,8 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
         court_name: courtName,
         wait_time: waitTime,
         comment: comment || getDefaultComment(waitTime),
-        expires_at: expiresAt.toISOString()
+        expires_at: expiresAt.toISOString(),
+        device_id: getOrCreateSmartcourtDeviceId(),
       };
 
       const { error } = await supabase.from('wait_times').insert(newWaitTime).select();

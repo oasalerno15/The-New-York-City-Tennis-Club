@@ -12,6 +12,7 @@ export interface WaitTime {
   court_name: string
   wait_time: string
   comment?: string
+  device_id?: string | null
   created_at: string
   expires_at: string
 }
@@ -21,6 +22,7 @@ export interface NewWaitTime {
   wait_time: string
   comment?: string
   expires_at: string
+  device_id?: string
 }
 
 /** Morning sign-up sheet line reports (mobile “Sheets” tab). */
@@ -30,6 +32,7 @@ export interface SignupSheetReport {
   borough: string
   status: 'sheet_empty' | 'few_names' | 'line_forming' | 'sheet_full'
   photo_url: string | null
+  device_id?: string | null
   created_at: string
   expires_at: string
 }

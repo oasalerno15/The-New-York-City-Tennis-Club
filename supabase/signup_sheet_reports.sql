@@ -13,6 +13,7 @@ create table if not exists public.signup_sheet_reports (
     constraint signup_sheet_reports_status_check
       check (status in ('sheet_empty', 'few_names', 'line_forming', 'sheet_full')),
   photo_url text,
+  device_id text,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null
 );

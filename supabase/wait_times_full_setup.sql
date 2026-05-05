@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.wait_times (
   court_name text NOT NULL,
   wait_time text NOT NULL,
   comment text NOT NULL DEFAULT '',
+  device_id text,
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL
 );

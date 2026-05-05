@@ -7,6 +7,7 @@ import {
   type SignupSheetBorough,
   type SignupSheetStatus,
 } from '@/data/signupSheetCourts';
+import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 
 const BUCKET = 'signup-sheet-photos';
 const TABLE = 'signup_sheet_reports';
@@ -127,6 +128,7 @@ export function useSignupSheetReports() {
   }, []);
 
   useEffect(() => {
+    ensureSmartcourtDeviceIdOnPageLoad();
     refresh();
   }, [refresh]);
 
@@ -160,6 +162,7 @@ export function useSignupSheetReports() {
           borough,
           status,
           expires_at: expiresAt,
+          device_id: getOrCreateSmartcourtDeviceId(),
         };
         if (photoUrl) row.photo_url = photoUrl;
         const { error } = await supabase.from(TABLE).insert(row);

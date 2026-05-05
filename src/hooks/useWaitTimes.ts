@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, formatSupabaseError, type WaitTime } from '@/lib/supabase';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
+import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 
 const BRIAN_WATKINS_KEY = 'Brian Watkins Tennis Courts';
 const SOUTH_OXFORD_KEY = 'South Oxford Park Tennis Courts';
@@ -108,14 +109,15 @@ export function useWaitTimes() {
     try {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-     const { error } = await supabase.from('wait_times').insert({
-  court_name: courtName,
-  wait_time: waitTime,
-  comment: comment || '',
-  expires_at: expiresAt.toISOString(),
-  hour_of_day: now.getHours(),
-  day_of_week: now.getDay(),
-});
+      const { error } = await supabase.from('wait_times').insert({
+        court_name: courtName,
+        wait_time: waitTime,
+        comment: comment || '',
+        expires_at: expiresAt.toISOString(),
+        hour_of_day: now.getHours(),
+        day_of_week: now.getDay(),
+        device_id: getOrCreateSmartcourtDeviceId(),
+      });
       if (error) throw error;
       setReportSuccess(courtName);
       setTimeout(() => setReportSuccess(null), 3000);
@@ -129,6 +131,7 @@ export function useWaitTimes() {
   };
 
   useEffect(() => {
+    ensureSmartcourtDeviceIdOnPageLoad();
     loadWaitTimes();
     const client = supabase;
     if (client) {
