@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import type { WaitTime } from '@/lib/supabase';
 
 type MobileWaitTab = 'report' | 'live';
+const DEUCE_APP_STORE_URL = 'http://apps.apple.com/us/app/deuce/id6749827534';
 
 interface WaitTimesSectionProps {
   waitTimes: { [key: string]: WaitTime | null };
@@ -22,6 +23,28 @@ const COURT_NAMES = [
   'Brian Watkins Tennis Courts',
   'South Oxford Park Tennis Courts',
 ] as const;
+
+function DeucePromoCard() {
+  return (
+    <div className="relative rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm">
+      <img
+        src="/deuce-logo.png"
+        alt="Deuce logo"
+        className="absolute right-3 top-3 h-10 w-10 rounded-lg object-cover shadow-sm"
+      />
+      <p className="text-lg font-semibold text-[#2D5A27]">Need a hitting partner?</p>
+      <p className="mt-1 text-sm text-[#1A1A1A]/80">Find one on Deuce</p>
+      <a
+        href={DEUCE_APP_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#1a3d1f] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#16331a]"
+      >
+        Open Deuce
+      </a>
+    </div>
+  );
+}
 
 export function WaitTimesSection({
   waitTimes,
@@ -198,6 +221,7 @@ export function WaitTimesSection({
                   </div>
                 </div>
               ))}
+            {mobileTab === 'report' && <DeucePromoCard />}
           </div>
 
           <div
@@ -251,6 +275,7 @@ export function WaitTimesSection({
                   </div>
                 </div>
               ))}
+            {mobileTab === 'live' && <DeucePromoCard />}
           </div>
         </>
       ) : (
@@ -270,6 +295,8 @@ export function WaitTimesSection({
                 <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
               </div>
             </div>
+
+            <DeucePromoCard />
 
             <div className="space-y-4">
               {COURT_NAMES.map((courtName) => (
@@ -350,6 +377,8 @@ export function WaitTimesSection({
                 <span className="text-sm font-bold text-red-500 live-indicator">LIVE</span>
               </div>
             </div>
+
+            <DeucePromoCard />
 
             <div className="space-y-4">
               {COURT_NAMES.map((courtName) => (

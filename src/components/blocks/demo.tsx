@@ -10,6 +10,8 @@ import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supa
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 
+const DEUCE_APP_STORE_URL = 'http://apps.apple.com/us/app/deuce/id6749827534';
+
 
 // Interface for court data
 interface CourtData {
@@ -1597,6 +1599,24 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
                       </>
                     )}
                   </div>
+                </div>
+
+                <div className="relative bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                  <img
+                    src="/deuce-logo.png"
+                    alt="Deuce logo"
+                    className="absolute right-3 top-3 h-10 w-10 rounded-lg object-cover shadow-sm"
+                  />
+                  <p className="text-lg font-semibold text-[#1e3a5f]">Need a hitting partner?</p>
+                  <p className="mt-1 text-sm text-gray-600">Find one on Deuce</p>
+                  <a
+                    href={DEUCE_APP_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#1a3d1f] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#16331a]"
+                  >
+                    Open Deuce →
+                  </a>
                 </div>
               </div>
             </motion.div>
