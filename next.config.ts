@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /** Lets dev assets load when the site is opened as 127.0.0.1 (e.g. IDE preview). */
-  allowedDevOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
+  /** Allow localhost and forwarded IDE preview domains in dev. */
+  allowedDevOrigins: [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "*.preview.app.github.dev",
+    "*.preview.app",
+    "*.cursor.sh",
+  ],
   images: {
     remotePatterns: [
       {

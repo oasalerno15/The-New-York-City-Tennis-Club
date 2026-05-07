@@ -10,7 +10,7 @@ import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supa
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 
-const DEUCE_APP_STORE_URL = 'http://apps.apple.com/us/app/deuce/id6749827534';
+const DEUCE_APP_STORE_URL = 'https://apps.apple.com/us/app/deuce/id6749827534';
 
 
 // Interface for court data
