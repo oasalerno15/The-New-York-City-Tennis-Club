@@ -131,7 +131,7 @@ export function LiveUpdateCourtCard({
                 className={`flex items-center gap-0.5 text-xs font-semibold tabular-nums ${
                   lowCred ? 'text-gray-500' : 'text-[#1a3d1f]'
                 }`}
-                title="Legit votes"
+                title="Accurate votes"
               >
                 <MiniFlag fill={lowCred ? '#9ca3af' : GREEN_FLAG_ICON} />
                 {confirmed}
@@ -140,7 +140,7 @@ export function LiveUpdateCourtCard({
                 className={`flex items-center gap-0.5 text-xs font-semibold tabular-nums ${
                   lowCred ? 'text-gray-500' : 'text-[#9b3d3d]'
                 }`}
-                title="Not credible votes"
+                title="Inaccurate votes"
               >
                 <MiniFlag fill={lowCred ? '#9ca3af' : RED_FLAG_ICON} />
                 {outdated}
@@ -205,7 +205,7 @@ export function LiveUpdateCourtCard({
               }`}
               style={{ backgroundColor: GREEN_FLAG_BTN }}
             >
-              🟢 Legit
+              🟢 Accurate
             </button>
             <button
               type="button"
@@ -216,7 +216,7 @@ export function LiveUpdateCourtCard({
               }`}
               style={{ backgroundColor: RED_FLAG_BTN }}
             >
-              🔴 Not credible
+              🔴 Inaccurate
             </button>
           </div>
         </div>
