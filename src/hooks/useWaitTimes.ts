@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase, formatSupabaseError, type WaitTime } from '@/lib/supabase';
 import type { WaitReportVoteKind } from '@/lib/waitTimeReportVotes';
 import { incrementWaitTimeFlag, alertFlagError } from '@/lib/incrementWaitTimeFlag';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
+import {
+  mergeWaitTimeUpdateIntoCourts,
+  subscribeWaitTimesRealtime,
+} from '@/lib/waitTimesRealtime';
 
 const BRIAN_WATKINS_KEY = 'Brian Watkins Tennis Courts';
 const SOUTH_OXFORD_KEY = 'South Oxford Park Tennis Courts';
@@ -94,6 +98,9 @@ export function useWaitTimes() {
     }
   };
 
+  const loadWaitTimesRef = useRef(loadWaitTimes);
+  loadWaitTimesRef.current = loadWaitTimes;
+
   const handleReportWaitTime = async (
     courtName: string,
     waitTime: string,
@@ -160,6 +167,16 @@ export function useWaitTimes() {
       };
       run();
     }
+  }, []);
+
+  useEffect(() => {
+    const client = supabase;
+    if (!client) return;
+    return subscribeWaitTimesRealtime(
+      client,
+      (row) => setWaitTimes((prev) => mergeWaitTimeUpdateIntoCourts(prev, row)),
+      () => void loadWaitTimesRef.current()
+    );
   }, []);
 
   return {

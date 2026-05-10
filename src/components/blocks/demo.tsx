@@ -10,6 +10,10 @@ import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supa
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 import { incrementWaitTimeFlag, alertFlagError } from '@/lib/incrementWaitTimeFlag';
+import {
+  mergeWaitTimeUpdateIntoCourts,
+  subscribeWaitTimesRealtime,
+} from '@/lib/waitTimesRealtime';
 import type { WaitReportVoteKind } from '@/lib/waitTimeReportVotes';
 import { LiveUpdateCourtCard } from '@/components/blocks/LiveUpdateCourtCard';
 
@@ -516,6 +520,9 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     }
   };
 
+  const loadWaitTimesRef = useRef(loadWaitTimes);
+  loadWaitTimesRef.current = loadWaitTimes;
+
   // Clean up expired wait times from database
   const cleanupExpiredWaitTimes = async () => {
     if (!supabase) return;
@@ -532,11 +539,17 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     }
   };
 
-  // Initialize wait times on component mount
+  // Initialize wait times on component mount + realtime sync
   useEffect(() => {
     ensureSmartcourtDeviceIdOnPageLoad();
     loadWaitTimes();
     cleanupExpiredWaitTimes(); // Clean up old data
+    if (!supabase) return;
+    return subscribeWaitTimesRealtime(
+      supabase,
+      (row) => setWaitTimes((prev) => mergeWaitTimeUpdateIntoCourts(prev, row)),
+      () => void loadWaitTimesRef.current()
+    );
   }, []);
 
   // Load courts data on component mount

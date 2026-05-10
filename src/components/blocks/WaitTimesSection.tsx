@@ -162,7 +162,7 @@ export function WaitTimesSection({
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
                     <div
-                      className={`w-3 h-3 min-w-[12px] min-h-[12px] ${
+                      className={`w-4 h-4 min-w-[16px] min-h-[16px] ${
                         waitTimes[courtName]
                           ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
                           : 'bg-gray-500'
@@ -267,7 +267,7 @@ export function WaitTimesSection({
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
                     <div
-                      className={`w-3 h-3 min-w-[12px] min-h-[12px] ${
+                      className={`w-4 h-4 min-w-[16px] min-h-[16px] ${
                         waitTimes[courtName]
                           ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
                           : 'bg-gray-500'
