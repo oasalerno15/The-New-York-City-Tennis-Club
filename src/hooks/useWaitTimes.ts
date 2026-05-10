@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase, formatSupabaseError, type WaitTime } from '@/lib/supabase';
+import type { WaitReportVoteKind } from '@/lib/waitTimeReportVotes';
+import { incrementWaitTimeFlag, alertFlagError } from '@/lib/incrementWaitTimeFlag';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
 
@@ -130,6 +132,20 @@ export function useWaitTimes() {
     }
   };
 
+  const handleFlagWaitTime = async (reportId: string, kind: WaitReportVoteKind) => {
+    if (!supabase) {
+      alert('Wait times are not configured. Add Supabase env vars to enable.');
+      return;
+    }
+    try {
+      await incrementWaitTimeFlag(supabase, reportId, kind);
+      await loadWaitTimes();
+    } catch (error) {
+      console.error('Error flagging wait time:', error);
+      alertFlagError(error);
+    }
+  };
+
   useEffect(() => {
     ensureSmartcourtDeviceIdOnPageLoad();
     loadWaitTimes();
@@ -155,6 +171,7 @@ export function useWaitTimes() {
     getStatusColor,
     formatTimeDifference,
     handleReportWaitTime,
+    handleFlagWaitTime,
     loadWaitTimes,
   };
 }

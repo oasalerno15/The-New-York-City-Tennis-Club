@@ -13,6 +13,8 @@ export interface WaitTime {
   wait_time: string
   comment?: string
   device_id?: string | null
+  confirmed_count?: number
+  outdated_count?: number
   created_at: string
   expires_at: string
 }

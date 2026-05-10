@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS public.wait_times (
   wait_time text NOT NULL,
   comment text NOT NULL DEFAULT '',
   device_id text,
+  confirmed_count integer NOT NULL DEFAULT 0,
+  outdated_count integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL
 );
@@ -18,6 +20,7 @@ ALTER TABLE public.wait_times ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "wait_times_select_public" ON public.wait_times;
 DROP POLICY IF EXISTS "wait_times_insert_public" ON public.wait_times;
+DROP POLICY IF EXISTS "wait_times_update_public" ON public.wait_times;
 DROP POLICY IF EXISTS "wait_times_delete_public" ON public.wait_times;
 
 CREATE POLICY "wait_times_select_public"
@@ -26,6 +29,11 @@ CREATE POLICY "wait_times_select_public"
 
 CREATE POLICY "wait_times_insert_public"
   ON public.wait_times FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "wait_times_update_public"
+  ON public.wait_times FOR UPDATE
+  USING (true)
   WITH CHECK (true);
 
 CREATE POLICY "wait_times_delete_public"

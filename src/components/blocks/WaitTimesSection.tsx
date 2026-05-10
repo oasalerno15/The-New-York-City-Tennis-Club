@@ -3,6 +3,8 @@
 import { useRef, useState, useLayoutEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { WaitTime } from '@/lib/supabase';
+import type { WaitReportVoteKind } from '@/lib/waitTimeReportVotes';
+import { LiveUpdateCourtCard } from '@/components/blocks/LiveUpdateCourtCard';
 
 type MobileWaitTab = 'report' | 'live';
 const DEUCE_APP_STORE_URL = 'https://apps.apple.com/us/app/deuce/id6749827534';
@@ -13,6 +15,7 @@ interface WaitTimesSectionProps {
   getStatusColor: (status: string) => string;
   formatTimeDifference: (timestamp: number) => string;
   handleReportWaitTime: (courtName: string, waitTime: string, comment: string) => Promise<void>;
+  handleFlagWaitTime: (reportId: string, kind: WaitReportVoteKind) => Promise<void>;
   reporting: string | null;
   reportSuccess: string | null;
 }
@@ -30,6 +33,7 @@ export function WaitTimesSection({
   getStatusColor,
   formatTimeDifference,
   handleReportWaitTime,
+  handleFlagWaitTime,
   reporting,
   reportSuccess,
 }: WaitTimesSectionProps) {
@@ -221,47 +225,18 @@ export function WaitTimesSection({
           >
             {mobileTab === 'live' &&
               COURT_NAMES.map((courtName) => (
-                <div
+                <LiveUpdateCourtCard
                   key={courtName}
-                  className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
-                    <div
-                      className={`w-3 h-3 ${
-                        waitTimes[courtName]
-                          ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
-                          : 'bg-gray-500'
-                      } rounded-full`}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {waitTimes[courtName] ? (
-                      <>
-                        <p className="text-gray-700 font-medium">
-                          {waitTimes[courtName]!.wait_time}
-                        </p>
-                        {waitTimes[courtName]!.comment &&
-                        waitTimes[courtName]!.comment!.trim() !== '' ? (
-                          <p className="text-sm italic text-gray-600">
-                            {waitTimes[courtName]!.comment}
-                          </p>
-                        ) : null}
-                        <p className="text-sm text-gray-500">
-                          Updated{' '}
-                          {formatTimeDifference(
-                            new Date(waitTimes[courtName]!.created_at).getTime()
-                          )}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-400 font-medium">No wait time reported</p>
-                        <p className="text-sm text-gray-400">Be the first to report!</p>
-                      </>
-                    )}
-                  </div>
-                </div>
+                  courtName={courtName}
+                  report={waitTimes[courtName]}
+                  getStatusFromWaitTime={getStatusFromWaitTime}
+                  getStatusColor={getStatusColor}
+                  formatTimeDifference={formatTimeDifference}
+                  onFlag={handleFlagWaitTime}
+                  cardClassName="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                  titleClassName="text-[#2D5A27]"
+                  commentQuoted={false}
+                />
               ))}
           </div>
         </>
@@ -365,47 +340,17 @@ export function WaitTimesSection({
 
             <div className="space-y-4">
               {COURT_NAMES.map((courtName) => (
-                <div
+                <LiveUpdateCourtCard
                   key={courtName}
-                  className="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#2D5A27]">{courtName}</h4>
-                    <div
-                      className={`w-3 h-3 ${
-                        waitTimes[courtName]
-                          ? getStatusColor(getStatusFromWaitTime(waitTimes[courtName]!.wait_time))
-                          : 'bg-gray-500'
-                      } rounded-full`}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    {waitTimes[courtName] ? (
-                      <>
-                        <p className="text-gray-700 font-medium">
-                          {waitTimes[courtName]!.wait_time}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Updated{' '}
-                          {formatTimeDifference(
-                            new Date(waitTimes[courtName]!.created_at).getTime()
-                          )}
-                        </p>
-                        {waitTimes[courtName]!.comment &&
-                        waitTimes[courtName]!.comment!.trim() !== '' ? (
-                          <p className="text-sm text-gray-600 italic">
-                            &ldquo;{waitTimes[courtName]!.comment}&rdquo;
-                          </p>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-400 font-medium">No wait time reported</p>
-                        <p className="text-sm text-gray-400">Be the first to report!</p>
-                      </>
-                    )}
-                  </div>
-                </div>
+                  courtName={courtName}
+                  report={waitTimes[courtName]}
+                  getStatusFromWaitTime={getStatusFromWaitTime}
+                  getStatusColor={getStatusColor}
+                  formatTimeDifference={formatTimeDifference}
+                  onFlag={handleFlagWaitTime}
+                  cardClassName="rounded-lg border-2 border-[#2D5A27]/35 bg-white/45 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                  titleClassName="text-[#2D5A27]"
+                />
               ))}
             </div>
           </motion.div>

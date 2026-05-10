@@ -9,6 +9,9 @@ import { SignupSheetsPanel } from '@/components/mobile/signup-sheets/SignupSheet
 import { supabase, formatSupabaseError, WaitTime, NewWaitTime } from '@/lib/supabase';
 import { normalizeCourtNameFromDb } from '@/lib/waitTimesCourt';
 import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } from '@/lib/smartcourtDeviceId';
+import { incrementWaitTimeFlag, alertFlagError } from '@/lib/incrementWaitTimeFlag';
+import type { WaitReportVoteKind } from '@/lib/waitTimeReportVotes';
+import { LiveUpdateCourtCard } from '@/components/blocks/LiveUpdateCourtCard';
 
 const DEUCE_APP_STORE_URL = 'https://apps.apple.com/us/app/deuce/id6749827534';
 
@@ -672,7 +675,19 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
     }
   };
 
-
+  const handleFlagWaitTime = async (reportId: string, kind: WaitReportVoteKind) => {
+    if (!supabase) {
+      alert('Supabase client not initialized');
+      return;
+    }
+    try {
+      await incrementWaitTimeFlag(supabase, reportId, kind);
+      await loadWaitTimes();
+    } catch (error) {
+      console.error('Error flagging wait time:', error);
+      alertFlagError(error);
+    }
+  };
 
   // Replace with your actual Google Maps API key
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -1505,101 +1520,26 @@ const MediaContent = ({ mediaType }: { mediaType: 'video' | 'image' }) => {
 
               {/* Big Green Display Cards */}
               <div className="space-y-4">
-                {/* Hudson River Park Courts */}
-                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Hudson River Park Courts</h4>
-                    <div className={`w-3 h-3 ${waitTimes['Hudson River Park Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Hudson River Park Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
-                  </div>
-                  <div className="space-y-2">
-                    {waitTimes['Hudson River Park Courts'] ? (
-                      <>
-                        <p className="text-gray-700 font-medium">{waitTimes['Hudson River Park Courts'].wait_time}</p>
-                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Hudson River Park Courts'].created_at).getTime())}</p>
-                        {waitTimes['Hudson River Park Courts'].comment && waitTimes['Hudson River Park Courts'].comment.trim() !== '' ? (
-                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Hudson River Park Courts'].comment}&rdquo;</p>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-400 font-medium">No wait time reported</p>
-                        <p className="text-sm text-gray-400">Be the first to report!</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Pier 42 */}
-                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Pier 42</h4>
-                    <div className={`w-3 h-3 ${waitTimes['Pier 42'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Pier 42'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
-                  </div>
-                  <div className="space-y-2">
-                    {waitTimes['Pier 42'] ? (
-                      <>
-                        <p className="text-gray-700 font-medium">{waitTimes['Pier 42'].wait_time}</p>
-                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Pier 42'].created_at).getTime())}</p>
-                        {waitTimes['Pier 42'].comment && waitTimes['Pier 42'].comment.trim() !== '' ? (
-                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Pier 42'].comment}&rdquo;</p>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-400 font-medium">No wait time reported</p>
-                        <p className="text-sm text-gray-400">Be the first to report!</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Brian Watkins Tennis Courts */}
-                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1e3a5f]">Brian Watkins Tennis Courts</h4>
-                    <div className={`w-3 h-3 ${waitTimes['Brian Watkins Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['Brian Watkins Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
-                  </div>
-                  <div className="space-y-2">
-                    {waitTimes['Brian Watkins Tennis Courts'] ? (
-                      <>
-                        <p className="text-gray-700 font-medium">{waitTimes['Brian Watkins Tennis Courts'].wait_time}</p>
-                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['Brian Watkins Tennis Courts'].created_at).getTime())}</p>
-                        {waitTimes['Brian Watkins Tennis Courts'].comment && waitTimes['Brian Watkins Tennis Courts'].comment.trim() !== '' ? (
-                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['Brian Watkins Tennis Courts'].comment}&rdquo;</p>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-400 font-medium">No wait time reported</p>
-                        <p className="text-sm text-gray-400">Be the first to report!</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* South Oxford Park Tennis Courts */}
-                <div className="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-lg font-semibold text-[#1e3a5f]">South Oxford Park Tennis Courts</h4>
-                    <div className={`w-3 h-3 ${waitTimes['South Oxford Park Tennis Courts'] ? getStatusColor(getStatusFromWaitTime(waitTimes['South Oxford Park Tennis Courts'].wait_time)) : 'bg-gray-500'} rounded-full`}></div>
-                  </div>
-                  <div className="space-y-2">
-                    {waitTimes['South Oxford Park Tennis Courts'] ? (
-                      <>
-                        <p className="text-gray-700 font-medium">{waitTimes['South Oxford Park Tennis Courts'].wait_time}</p>
-                        <p className="text-sm text-gray-500">Updated {formatTimeDifference(new Date(waitTimes['South Oxford Park Tennis Courts'].created_at).getTime())}</p>
-                        {waitTimes['South Oxford Park Tennis Courts'].comment && waitTimes['South Oxford Park Tennis Courts'].comment.trim() !== '' ? (
-                          <p className="text-sm text-gray-600 italic">&ldquo;{waitTimes['South Oxford Park Tennis Courts'].comment}&rdquo;</p>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-gray-400 font-medium">No wait time reported</p>
-                        <p className="text-sm text-gray-400">Be the first to report!</p>
-                      </>
-                    )}
-                  </div>
-                </div>
+                {(
+                  [
+                    'Hudson River Park Courts',
+                    'Pier 42',
+                    'Brian Watkins Tennis Courts',
+                    'South Oxford Park Tennis Courts',
+                  ] as const
+                ).map((courtName) => (
+                  <LiveUpdateCourtCard
+                    key={courtName}
+                    courtName={courtName}
+                    report={waitTimes[courtName]}
+                    getStatusFromWaitTime={getStatusFromWaitTime}
+                    getStatusColor={getStatusColor}
+                    formatTimeDifference={formatTimeDifference}
+                    onFlag={handleFlagWaitTime}
+                    cardClassName="bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300"
+                    titleClassName="text-[#1e3a5f]"
+                  />
+                ))}
 
                 <div className="relative bg-white border-2 border-[#1e3a5f] rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                   <img

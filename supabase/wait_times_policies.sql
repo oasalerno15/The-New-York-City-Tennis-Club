@@ -7,6 +7,7 @@ ALTER TABLE public.wait_times ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "wait_times_select_public" ON public.wait_times;
 DROP POLICY IF EXISTS "wait_times_insert_public" ON public.wait_times;
+DROP POLICY IF EXISTS "wait_times_update_public" ON public.wait_times;
 DROP POLICY IF EXISTS "wait_times_delete_public" ON public.wait_times;
 
 CREATE POLICY "wait_times_select_public"
@@ -15,6 +16,11 @@ CREATE POLICY "wait_times_select_public"
 
 CREATE POLICY "wait_times_insert_public"
   ON public.wait_times FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "wait_times_update_public"
+  ON public.wait_times FOR UPDATE
+  USING (true)
   WITH CHECK (true);
 
 CREATE POLICY "wait_times_delete_public"

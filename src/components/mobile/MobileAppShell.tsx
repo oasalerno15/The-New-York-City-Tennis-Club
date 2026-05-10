@@ -16,6 +16,7 @@ export function MobileAppShell() {
     getStatusColor,
     formatTimeDifference,
     handleReportWaitTime,
+    handleFlagWaitTime,
     reporting,
     reportSuccess,
   } = useWaitTimes();
@@ -44,6 +45,7 @@ export function MobileAppShell() {
               getStatusColor={getStatusColor}
               formatTimeDifference={formatTimeDifference}
               handleReportWaitTime={handleReportWaitTime}
+              handleFlagWaitTime={handleFlagWaitTime}
               reporting={reporting}
               reportSuccess={reportSuccess}
             />
