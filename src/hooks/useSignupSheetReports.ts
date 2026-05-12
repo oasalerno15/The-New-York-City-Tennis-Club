@@ -11,6 +11,7 @@ import { ensureSmartcourtDeviceIdOnPageLoad, getOrCreateSmartcourtDeviceId } fro
 
 const BUCKET = 'signup-sheet-photos';
 const TABLE = 'signup_sheet_reports';
+const DEFAULT_SIGNUP_SHEET_STATUS: SignupSheetStatus = 'few_names';
 
 const HOURS_MS = 8 * 60 * 60 * 1000;
 
@@ -136,43 +137,41 @@ export function useSignupSheetReports() {
     async (
       courtName: string,
       borough: SignupSheetBorough,
-      status: SignupSheetStatus,
       photo?: File | null
     ): Promise<boolean> => {
       if (!supabase) {
         alert('Reporting is not configured. Add Supabase environment variables.');
         return false;
       }
+      if (!photo || photo.size <= 0) {
+        const msg = 'Attach a photo of the sign up sheet before submitting.';
+        setSubmitError(msg);
+        alert(msg);
+        return false;
+      }
       setSubmitting(true);
       setSubmitError(null);
-      let photoUploadFailure: string | null = null;
       try {
-        let photoUrl: string | null = null;
-        if (photo && photo.size > 0) {
-          const uploaded = await uploadSignupPhoto(photo);
-          if (uploaded.url) {
-            photoUrl = uploaded.url;
-          } else if (uploaded.error) {
-            photoUploadFailure = uploaded.error;
-          }
+        const uploaded = await uploadSignupPhoto(photo);
+        if (!uploaded.url) {
+          const reason = uploaded.error || 'Unknown upload error';
+          throw new Error(
+            `Photo upload failed (${reason}). In Supabase: create public bucket "${BUCKET}" and run the storage policies in supabase/signup_sheet_reports.sql.`
+          );
         }
         const expiresAt = new Date(Date.now() + HOURS_MS).toISOString();
         const row: Record<string, unknown> = {
           court_name: courtName,
           borough,
-          status,
+          // Legacy required DB column; the UI no longer asks users to choose a status.
+          status: DEFAULT_SIGNUP_SHEET_STATUS,
           expires_at: expiresAt,
           device_id: getOrCreateSmartcourtDeviceId(),
+          photo_url: uploaded.url,
         };
-        if (photoUrl) row.photo_url = photoUrl;
         const { error } = await supabase.from(TABLE).insert(row);
         if (error) throw error;
         await refresh();
-        if (photoUploadFailure) {
-          setSubmitError(
-            `Report saved without a photo (${photoUploadFailure}). In Supabase: create public bucket "${BUCKET}" and run the storage policies in supabase/signup_sheet_reports.sql.`
-          );
-        }
         return true;
       } catch (e) {
         let msg = formatSupabaseError(e);

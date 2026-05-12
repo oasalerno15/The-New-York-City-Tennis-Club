@@ -11,7 +11,7 @@ create table if not exists public.signup_sheet_reports (
   borough text not null,
   status text not null
     constraint signup_sheet_reports_status_check
-      check (status in ('sheet_empty', 'few_names', 'line_forming', 'sheet_full')),
+      check (status in ('sheet_empty', 'few_names', 'sheet_full')),
   photo_url text,
   device_id text,
   created_at timestamptz not null default now(),

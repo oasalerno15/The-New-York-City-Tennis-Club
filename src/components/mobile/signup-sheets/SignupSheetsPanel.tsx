@@ -10,18 +10,12 @@ import {
   X,
   ClipboardList,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useSignupSheetReports } from '@/hooks/useSignupSheetReports';
 import {
   SIGNUP_SHEET_BOROUGHS,
-  SIGNUP_SHEET_STATUS_BUTTON_CLASS,
-  SIGNUP_SHEET_STATUS_LABEL,
-  SIGNUP_SHEET_STATUS_ORDER,
   courtsByBorough,
-  signupStatusDotClass,
   type SignupSheetBorough,
   type SignupSheetCourt,
-  type SignupSheetStatus,
 } from '@/data/signupSheetCourts';
 import type { SignupSheetReport } from '@/lib/supabase';
 
@@ -55,10 +49,25 @@ export function SignupSheetsPanel() {
     Brooklyn: false,
     Queens: false,
   });
-  const [reportStatus, setReportStatus] = useState<SignupSheetStatus | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const clearPhoto = () => {
+    setPhotoFile(null);
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoPreview(null);
+  };
+
+  const openPhotoPicker = () => {
+    const input = fileInputRef.current as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+      return;
+    }
+    input.click();
+  };
 
   useEffect(() => {
     return () => {
@@ -72,7 +81,6 @@ export function SignupSheetsPanel() {
   };
 
   const openReport = () => {
-    setReportStatus(null);
     setPhotoFile(null);
     if (photoPreview) URL.revokeObjectURL(photoPreview);
     setPhotoPreview(null);
@@ -105,16 +113,16 @@ export function SignupSheetsPanel() {
   };
 
   const handleSubmitReport = async () => {
-    if (!selected || !reportStatus) {
-      alert('Pick a status first.');
+    if (!selected) {
       return;
     }
-    const ok = await submitReport(selected.name, selected.borough, reportStatus, photoFile);
+    if (!photoFile) {
+      alert('Add a photo of the sign up sheet before submitting.');
+      return;
+    }
+    const ok = await submitReport(selected.name, selected.borough, photoFile);
     if (ok) {
-      setPhotoFile(null);
-      if (photoPreview) URL.revokeObjectURL(photoPreview);
-      setPhotoPreview(null);
-      setReportStatus(null);
+      clearPhoto();
       setView('detail');
     }
   };
@@ -122,6 +130,7 @@ export function SignupSheetsPanel() {
   const reportForSelected: SignupSheetReport | null = selected
     ? latestByCourt[selected.name]
     : null;
+  const canSubmit = Boolean(photoFile) && !submitting;
 
   function SubHeader({ title }: { title: string }) {
     return (
@@ -229,20 +238,16 @@ export function SignupSheetsPanel() {
                                 className="flex w-full items-start gap-3 px-4 py-3 text-left active:bg-[#2D5A27]/5"
                               >
                                 <span
-                                  className={cn(
-                                    'mt-1.5 h-3 w-3 shrink-0 rounded-full',
-                                    r
-                                      ? signupStatusDotClass(r.status)
-                                      : 'bg-gray-400'
-                                  )}
+                                  className={`mt-1.5 h-3 w-3 shrink-0 rounded-full ${
+                                    r ? 'bg-[#2D5A27]' : 'bg-gray-400'
+                                  }`}
                                   aria-hidden
                                 />
                                 <span className="min-w-0 flex-1">
                                   <span className="font-medium text-[#2D5A27]">{court.name}</span>
                                   {r ? (
                                     <span className="mt-0.5 block text-xs text-gray-500">
-                                      {SIGNUP_SHEET_STATUS_LABEL[r.status]} ·{' '}
-                                      {formatReportTime(r.created_at)}
+                                      Photo reported · {formatReportTime(r.created_at)}
                                     </span>
                                   ) : (
                                     <span className="mt-0.5 block text-xs text-gray-400">
@@ -284,25 +289,13 @@ export function SignupSheetsPanel() {
                 </p>
               ) : null}
               <div className="rounded-xl border-2 border-[#2D5A27]/35 bg-white/50 p-4 shadow-sm backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Current status
-                  </span>
-                  {reportForSelected ? (
-                    <span
-                      className={cn(
-                        'h-4 w-4 shrink-0 rounded-full',
-                        signupStatusDotClass(reportForSelected.status)
-                      )}
-                    />
-                  ) : (
-                    <span className="h-4 w-4 shrink-0 rounded-full bg-gray-400" />
-                  )}
-                </div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Latest photo report
+                </span>
                 {reportForSelected ? (
                   <>
                     <p className="mt-2 text-lg font-semibold text-[#2D5A27]">
-                      {SIGNUP_SHEET_STATUS_LABEL[reportForSelected.status]}
+                      Photo available
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
                       Last reported {formatReportTime(reportForSelected.created_at)}
@@ -352,7 +345,7 @@ export function SignupSheetsPanel() {
             transition={{ duration: 0.2 }}
             className="flex min-h-0 flex-1 flex-col"
           >
-            <SubHeader title="Report status" />
+            <SubHeader title="Report photo" />
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-8">
               {submitError ? (
                 <p
@@ -363,22 +356,9 @@ export function SignupSheetsPanel() {
                 </p>
               ) : null}
               <p className="text-sm text-gray-600">{selected.name}</p>
-              <div className="space-y-3">
-                {SIGNUP_SHEET_STATUS_ORDER.map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setReportStatus(st)}
-                    className={cn(
-                      'w-full rounded-2xl border-2 py-4 text-center text-base font-semibold shadow-sm transition active:scale-[0.99]',
-                      SIGNUP_SHEET_STATUS_BUTTON_CLASS[st],
-                      reportStatus === st ? 'ring-4 ring-offset-2' : 'opacity-95'
-                    )}
-                  >
-                    {SIGNUP_SHEET_STATUS_LABEL[st]}
-                  </button>
-                ))}
-              </div>
+              <p className="text-sm leading-relaxed text-gray-600">
+                Snap a clear photo of today&apos;s sign up sheet, then submit it.
+              </p>
 
               <input
                 ref={fileInputRef}
@@ -390,11 +370,11 @@ export function SignupSheetsPanel() {
               />
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={openPhotoPicker}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#2D5A27]/35 bg-white/55 py-4 text-base font-medium text-[#2D5A27] backdrop-blur-sm active:bg-[#2D5A27]/5"
               >
                 <Camera className="h-5 w-5" />
-                Photo (optional)
+                {photoPreview ? 'Retake photo' : 'Take photo'}
               </button>
               {photoPreview ? (
                 <div className="relative overflow-hidden rounded-xl border border-gray-200">
@@ -402,11 +382,7 @@ export function SignupSheetsPanel() {
                   <img src={photoPreview} alt="" className="max-h-56 w-full object-cover" />
                   <button
                     type="button"
-                    onClick={() => {
-                      setPhotoFile(null);
-                      URL.revokeObjectURL(photoPreview);
-                      setPhotoPreview(null);
-                    }}
+                    onClick={clearPhoto}
                     className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white"
                     aria-label="Remove photo"
                   >
@@ -417,14 +393,13 @@ export function SignupSheetsPanel() {
 
               <button
                 type="button"
-                disabled={submitting || !reportStatus}
+                disabled={!canSubmit}
                 onClick={handleSubmitReport}
-                className={cn(
-                  'w-full rounded-2xl py-4 text-base font-semibold text-white shadow-lg',
-                  submitting || !reportStatus
+                className={`w-full rounded-2xl py-4 text-base font-semibold text-white shadow-lg ${
+                  !canSubmit
                     ? 'bg-gray-400'
                     : 'bg-[#2D5A27] text-[#FFFDD0] active:bg-[#24481f]'
-                )}
+                }`}
               >
                 {submitting ? 'Submitting…' : 'Submit'}
               </button>
